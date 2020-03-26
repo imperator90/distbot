@@ -1,0 +1,3 @@
+include pyppeteer_spider/automation_detection/*.js
+include pyppeteer_spider/headless_detection/*.js
+include pyppeteer_spider/test/*.py
