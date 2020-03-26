@@ -47,6 +47,8 @@ page for another navigation task while you are still processing the page in your
 
 ##### Extract urls and html from Amazon.
 ```
+from pyppeteer_spider.spider import PyppeteerSpider
+
 spider = await PyppeteerSpider().launch()
 page = await spider.get('https://www.amazon.com/')
 urls = [await page.evaluate("(ele) => ele.getAttribute('href')",ele)
@@ -58,6 +60,8 @@ await spider.shutdown()
 
 ##### Extract profile data from LinkedIn.
 ```
+from pyppeteer_spider.spider import PyppeteerSpider
+
 spider = await PyppeteerSpider().launch()
 page = await spider.get('https://www.linkedin.com/search/results/people/?keywords=Software%20Engineer&origin=SUGGESTION')
 # scroll to the page so all content loads.
@@ -79,6 +83,9 @@ await spider.shutdown()
 
 ##### Asynchronously scrape a list of urls using 3 browsers with 4 tabs each.
 ```
+from pyppeteer_spider.spider import PyppeteerSpider
+from pathlib import Path
+
 async def do_scrape(url, spider):
     page = await spider.get(url)
     urls = [await page.evaluate("(ele) => ele.getAttribute('href')",ele)
