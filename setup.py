@@ -9,7 +9,8 @@ setuptools.setup(
     maintainer='Dan Kelleher',
     maintainer_email='danielkelleher@protonmail.com',
     include_package_data=True,
-    description='A stealthy asynchronous (optionally distributed) spider running Chrome, Headless Chrome, Chromium, or Headless Chromium',
+    description=
+    'A stealthy asynchronous (optionally distributed) spider running Chrome, Headless Chrome, Chromium, or Headless Chromium',
     packages=['pyppeteer_spider'],
     url='https://github.com/djkelleher/pyppeteer_spider',
     classifiers=[
@@ -20,16 +21,11 @@ setuptools.setup(
         'License :: OSI Approved :: MIT License',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
-        'Operating System :: OS Independent',
-        'Topic :: Internet',
+        'Operating System :: OS Independent', 'Topic :: Internet',
         'Topic :: Internet :: WWW/HTTP :: Browsers',
         'Topic :: Scientific/Engineering :: Information Analysis'
     ],
-    install_requires = [
+    install_requires=[
         "pyppeteer @ git+https://github.com/miyakogi/pyppeteer.git@dev",
     ],
-    test_requires = [
-        'pytest',
-        'pytest_asyncio'
-    ]
-)
+    test_requires=['pytest', 'pytest_asyncio'])

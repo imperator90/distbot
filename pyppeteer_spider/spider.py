@@ -4,7 +4,7 @@ from pyppeteer_spider.utils import get_logger
 
 import pyppeteer.errors
 import pyppeteer.connection
-import pyppeteer.page
+from pyppeteer.page import Page
 
 from typing import Optional, List, Dict, Union, Any
 from collections import defaultdict
@@ -36,28 +36,44 @@ class PyppeteerSpider:
     """Spider that cyclically distributes requests among multiple browsers/pages with custom settings ideal for scraping."""
     def __init__(
         self,
-        browser_page_count: int = 1, # Number of tabs per browser.
-        browser_count: int = 1, # Number of browsers.
-        default_nav_timeout: int = 30000,  # Default maximum navigation timeout. Units: ms
-        max_consec_browser_errors: int = 4, # Max allowable consecutive browser errors before browser will be replaced.
-        incognito: bool = False, # Run browser in incognito mode.
-        headless: bool = False, # Run browser in headless mode.
-        delete_cookies: bool = False, # Clear all cookies before each request.
-        disable_cache: bool = False, # Disable cache for each request.
-        disable_images: bool = False, # Load pages without images.
-        browser_memory_limit: Optional[int] = None, # Max memory browser can use. Units: mb
-        default_viewport: Optional[Dict[str, int]] = None, # Change default viewport size. Example: {width: 1280, height: 800}. Default is full page.
-        js_injection_scripts: Optional[List[str]] = None, # JavaScript functions that will be invoked on every page navigation.
-        request_abort_types: Optional[List[str]] = None, # Content types of requests that should be aborted. Example: 'image', 'font', 'stylesheet', 'script'
-        blocked_urls: Optional[List[str]] = None, # URL patterns to block. Wildcards ('*') are allowed.
-        proxy_addr: Optional[Union[List[str],str]] = None, # Address of proxy server.
-        user_data_dir: Optional[Union[List[str],str]] = None, # Path to Chrome profile directory. Default will use temp directory.
-        browser_executable: Optional[str] = None, # Path to Chrome or Chromium executable. If None, Chromium will be downloaded.
-        user_agent_type: Union['Linux', 'Darwin', 'Windows'] = platform.system(), # Select a user agent type. Default will be current system.
+        browser_page_count: int = 1,  # Number of tabs per browser.
+        browser_count: int = 1,  # Number of browsers.
+        default_nav_timeout:
+        int = 30000,  # Default maximum navigation timeout. Units: ms
+        max_consec_browser_errors:
+        int = 4,  # Max allowable consecutive browser errors before browser will be replaced.
+        incognito: bool = False,  # Run browser in incognito mode.
+        headless: bool = False,  # Run browser in headless mode.
+        delete_cookies: bool = False,  # Clear all cookies before each request.
+        disable_cache: bool = False,  # Disable cache for each request.
+        disable_images: bool = False,  # Load pages without images.
+        browser_memory_limit: Optional[
+            int] = None,  # Max memory browser can use. Units: mb
+        default_viewport: Optional[Dict[
+            str,
+            int]] = None,  # Change default viewport size. Example: {width: 1280, height: 800}. Default is full page.
+        js_injection_scripts: Optional[List[
+            str]] = None,  # JavaScript functions that will be invoked on every page navigation.
+        request_abort_types: Optional[List[
+            str]] = None,  # Content types of requests that should be aborted. Example: 'image', 'font', 'stylesheet', 'script'
+        blocked_urls: Optional[List[
+            str]] = None,  # URL patterns to block. Wildcards ('*') are allowed.
+        proxy_addr: Optional[Union[List[str],
+                                   str]] = None,  # Address of proxy server.
+        user_data_dir: Optional[Union[
+            List[str],
+            str]] = None,  # Path to Chrome profile directory. Default will use temp directory.
+        browser_executable: Optional[
+            str] = None,  # Path to Chrome or Chromium executable. If None, Chromium will be downloaded.
+        user_agent_type: Union['Linux', 'Darwin', 'Windows'] = platform.system(
+        ),  # Select a user agent type. Default will be current system.
         log_level: int = logging.INFO,
-        log_file_path: Optional[Union[str,pathlib.Path]] = None): 
-        log_save_path = Path(log_file_path) if log_file_path else Path(__file__).parent.joinpath('logs/spider.log')
-        self.logger = get_logger("PyppeteerSpider", log_save_path=log_save_path, log_level=log_level)
+        log_file_path: Optional[Union[str, pathlib.Path]] = None):
+        log_save_path = Path(log_file_path) if log_file_path else Path(
+            __file__).parent.joinpath('logs/spider.log')
+        self.logger = get_logger("PyppeteerSpider",
+                                 log_save_path=log_save_path,
+                                 log_level=log_level)
         if sys.version_info < (3, 7):
             self.logger.error(
                 f"Python version >= 3.7 is required. Detected version: {sys.version_info}. Exiting."
@@ -99,8 +115,10 @@ class PyppeteerSpider:
         """Runtime statistics."""
         return {
             'Total Requests': self.total_requests,
-            'Total Browser Replaces': self.browser_manager.total_browser_replaces,
-            'Total Connections Closed': self.browser_manager.total_connections_closed,
+            'Total Browser Replaces':
+            self.browser_manager.total_browser_replaces,
+            'Total Connections Closed':
+            self.browser_manager.total_connections_closed,
             'Status Codes': dict(self.status_codes),
             'Exceptions': dict(self.exceptions)
         }
@@ -111,7 +129,7 @@ class PyppeteerSpider:
         await self.browser_manager.add_managed_browser(self.browser_count)
         return self
 
-    async def get_page(self) -> pyppeteer.page.Page:
+    async def get_page(self) -> Page:
         """Get next page from queue."""
         browser_ok, page = await self.page_manager.get_page()
         if not browser_ok:
@@ -124,7 +142,7 @@ class PyppeteerSpider:
             return await self.get_page()
         return page
 
-    async def set_idle(self, page: pyppeteer.page.Page) -> None:
+    async def set_idle(self, page: Page) -> None:
         await self.page_manager.set_idle(page)
 
     async def get(self, url, retries=3, return_response=False, **kwargs):
@@ -133,16 +151,17 @@ class PyppeteerSpider:
             page = await self.get_page()
             cookies = kwargs.get('cookies')
             if cookies:
-                if isinstance(cookies,dict):
+                if isinstance(cookies, dict):
                     await page.setCookie(cookies)
-                elif isinstance(cookies,(list,tuple,set)):
+                elif isinstance(cookies, (list, tuple, set)):
                     await asyncio.gather(
-                        *[page.setCookie(cookie)
-                            for cookie in cookies])
+                        *[page.setCookie(cookie) for cookie in cookies])
                 else:
-                    raise ValueError("Argument for 'cookies' should be a dict or list|tuple|set of dicts.")
+                    raise ValueError(
+                        "Argument for 'cookies' should be a dict or list|tuple|set of dicts."
+                    )
             self.total_requests += 1
-            if self.total_requests%100==0:
+            if self.total_requests % 100 == 0:
                 self.logger.info(f"\n{pformat(self.stats)}\n")
             resp = await page.goto(url, **kwargs)
             status = str(resp.status) if resp is not None else None
@@ -153,7 +172,8 @@ class PyppeteerSpider:
                 return resp, page
             return page  # Make sure to return page to idle_pages when done with it!
         except Exception as e:
-            self.logger.error(f"Caught exception while fetching page {url}: {e}")
+            self.logger.error(
+                f"Caught exception while fetching page {url}: {e}")
             self.exceptions[type(e)] += 1
             await self.browser_manager.browser_error(page.browser, True)
             await self.set_idle(
@@ -167,7 +187,7 @@ class PyppeteerSpider:
                 self.get(url, retries, return_response, **kwargs))
         self.logger.error(f"Max retries exceeded. {url} can not be processed.")
 
-    async def scroll_page(self, page: pyppeteer.page.Page):
+    async def scroll_page(self, page: Page):
         """Scroll to the bottom of a page."""
         prev_loop_same_height = False
         last_height = await page.evaluate("() => document.body.scrollHeight")
@@ -176,7 +196,8 @@ class PyppeteerSpider:
                 await page.evaluate(
                     f"window.scrollTo(0, document.body.scrollHeight);")
                 await asyncio.sleep(1)
-                new_height = await page.evaluate("() => document.body.scrollHeight")
+                new_height = await page.evaluate(
+                    "() => document.body.scrollHeight")
                 if new_height == last_height:
                     if prev_loop_same_height:
                         return
@@ -188,11 +209,11 @@ class PyppeteerSpider:
             logging.warning(f"Page at {page.url} not scollable: {e}")
 
     async def hover_elements(self,
-                            page: pyppeteer.page.Page,
-                            ele_xpath: str,
-                            ele_min_sleep: float = 0.5,
-                            ele_max_sleep: int = 1,
-                            last_ele_idx: int = 0):
+                             page: Page,
+                             ele_xpath: str,
+                             ele_min_sleep: float = 0.5,
+                             ele_max_sleep: int = 1,
+                             last_ele_idx: int = 0):
         """Hover over all elements at ele_xpath."""
         await page.waitForXPath(ele_xpath)
         eles = await page.xpath(ele_xpath)
@@ -203,8 +224,8 @@ class PyppeteerSpider:
         new_last_ele_idx = ele_count
         if new_last_ele_idx != last_ele_idx:
             return await asyncio.create_task(
-                self.hover_elements(page, ele_xpath, ele_min_sleep, ele_max_sleep,
-                            new_last_ele_idx))
+                self.hover_elements(page, ele_xpath, ele_min_sleep,
+                                    ele_max_sleep, new_last_ele_idx))
         logging.info(f"Hovered all {ele_xpath} elements.")
 
     async def shutdown(self) -> None:
