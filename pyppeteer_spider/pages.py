@@ -96,7 +96,7 @@ class PageManager:
         tasks = []
         for page in await self.to_pages_(page_s_brow):
             if page not in self.idle_pages._queue:
-                self.logger.info(f"Adding page {page} to idle page queue.")
+                self.logger.debug(f"Adding page {page} to idle page queue.")
                 tasks.append(self.idle_pages.put(page))
         await asyncio.gather(*tasks)
 
