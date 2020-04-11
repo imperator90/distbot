@@ -78,12 +78,12 @@ class PageManager:
         # All page functions will hang if browser has crashed.
         browser_ok = True
         try:
-            page = await asyncio.wait_for(self.prep_page__(page), timeout=5)
+            page = await asyncio.wait_for(self.__prep_page(page), timeout=5)
         except asyncio.TimeoutError:
             browser_ok = False
         return browser_ok, page
 
-    async def prep_page__(self, page: Page) -> Page:
+    async def __prep_page(self, page: Page) -> Page:
         """Set a new user agent and optionally clear all cookies."""
         if self.delete_cookies:
             await page._client.send('Network.clearBrowserCookies')
@@ -94,7 +94,7 @@ class PageManager:
                                                 Browser]) -> None:
         """Add page(s) to the idle queue."""
         tasks = []
-        for page in await self.to_pages_(page_s_brow):
+        for page in await self.__to_pages(page_s_brow):
             if page not in self.idle_pages._queue:
                 self.logger.debug(f"Adding page {page} to idle page queue.")
                 tasks.append(self.idle_pages.put(page))
@@ -103,7 +103,7 @@ class PageManager:
     async def remove_page_s(
             self, page_s_brow: Union[Page, List[Page], Browser]) -> None:
         """Close page(s) and remove from idle queue."""
-        pages = await self.to_pages_(page_s_brow)
+        pages = await self.__to_pages(page_s_brow)
         self.logger.info(f"Removing {len(pages)} browser page(s).")
         for page in pages:
             if page in self.idle_pages._queue:
@@ -134,12 +134,12 @@ class PageManager:
     async def add_page_settings(
             self, page_s_brow: Union[Page, List[Page], Browser]) -> None:
         """Add custom settings to page(s)."""
-        pages = await self.to_pages_(page_s_brow)
+        pages = await self.__to_pages(page_s_brow)
         self.logger.info(f"Adding settings to {len(pages)} page(s).")
         await asyncio.gather(
-            *[self.add_page_settings_(page) for page in pages])
+            *[self.__add_page_settings(page) for page in pages])
 
-    async def add_page_settings__(self, page: Page) -> None:
+    async def __add_page_settings(self, page: Page) -> None:
         """Add custom settings to page."""
         # Change the default maximum navigation timeout.
         if self.default_nav_timeout:
@@ -194,7 +194,7 @@ class PageManager:
                     lambda request: asyncio.create_task(filter_type(request)))
         await asyncio.gather(*tasks)
 
-    async def to_pages__(self, page_s_brow: Union[Page, List[Page],
+    async def __to_pages(self, page_s_brow: Union[Page, List[Page],
                                                  Browser]) -> None:
         """Convert argument to a list of pages."""
         if isinstance(page_s_brow, Page):

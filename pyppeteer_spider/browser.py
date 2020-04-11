@@ -107,7 +107,7 @@ class BrowserManager():
             browser = await self.get_browser()
             self.managed_browsers[browser] = ManagedBrowser(browser)
 
-    def on_connection_close__(self) -> None:
+    def __on_connection_close(self) -> None:
         """Find browser with closed websocket connection and replace it."""
         self.logger.info("Handling closed connection.")
         for browser in list(self.managed_browsers.keys()):
@@ -184,7 +184,7 @@ class BrowserManager():
             for browser in list(self.managed_browsers.keys())
         ])
 
-    def cyclic_gen__(self, arg) -> Generator[Any, None, None]:
+    def __cyclic_gen(self, arg) -> Generator[Any, None, None]:
         """Return a cyclic generator."""
         arg = [arg] if not isinstance(arg, (tuple, list, set)) else arg
         if arg:
