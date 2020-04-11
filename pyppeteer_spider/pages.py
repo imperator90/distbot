@@ -139,7 +139,7 @@ class PageManager:
         await asyncio.gather(
             *[self.add_page_settings_(page) for page in pages])
 
-    async def add_page_settings_(self, page: Page) -> None:
+    async def add_page_settings__(self, page: Page) -> None:
         """Add custom settings to page."""
         # Change the default maximum navigation timeout.
         if self.default_nav_timeout:
@@ -194,7 +194,7 @@ class PageManager:
                     lambda request: asyncio.create_task(filter_type(request)))
         await asyncio.gather(*tasks)
 
-    async def to_pages_(self, page_s_brow: Union[Page, List[Page],
+    async def to_pages__(self, page_s_brow: Union[Page, List[Page],
                                                  Browser]) -> None:
         """Convert argument to a list of pages."""
         if isinstance(page_s_brow, Page):

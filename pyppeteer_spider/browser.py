@@ -55,10 +55,10 @@ class BrowserManager():
         self.incognito = incognito
         self.disable_images = disable_images
         self.max_consec_browser_errors = max_consec_browser_errors
-        self.proxy_addr_gen = self.cyclic(
+        self.proxy_addr_gen = self.cyclic_gen__(
             proxy_addr
         )  # If multiple proxy addresses are provided, they will be used cyclicly as browsers are created.
-        self.user_data_dir_gen = self.cyclic(
+        self.user_data_dir_gen = self.cyclic_gen__(
             user_data_dir
         )  # If multiple chrome profiles are provided, they will be used cyclicly as browsers are created.
         self.browser_executable = browser_executable
@@ -85,9 +85,11 @@ class BrowserManager():
 
     async def get_browser(self) -> Browser:
         """Launch a new browser."""
-        browser = await pyppeteer.launcher.launch(self.launch_options)
+        browser = await pyppeteer.launcher.launch(
+            self.launch_options)
         # Add callback that will be called in case of disconnection with Chrome Dev Tools.
-        browser._connection.setClosedCallback(self.on_connection_close)
+        browser._connection.setClosedCallback(
+            self.on_connection_close__)
         # Add self.page_count pages (tabs) to the new browser.
         # A new browser has 1 page by default, so add 1 less than desired page_count.
         await self.page_manager.add_browser_page_s(browser,
@@ -105,7 +107,7 @@ class BrowserManager():
             browser = await self.get_browser()
             self.managed_browsers[browser] = ManagedBrowser(browser)
 
-    def on_connection_close(self) -> None:
+    def on_connection_close__(self) -> None:
         """Find browser with closed websocket connection and replace it."""
         self.logger.info("Handling closed connection.")
         for browser in list(self.managed_browsers.keys()):
@@ -182,7 +184,7 @@ class BrowserManager():
             for browser in list(self.managed_browsers.keys())
         ])
 
-    def cyclic(self, arg) -> Generator[Any, None, None]:
+    def cyclic_gen__(self, arg) -> Generator[Any, None, None]:
         """Return a cyclic generator."""
         arg = [arg] if not isinstance(arg, (tuple, list, set)) else arg
         if arg:
