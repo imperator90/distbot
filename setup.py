@@ -26,6 +26,6 @@ setuptools.setup(
         'Topic :: Scientific/Engineering :: Information Analysis'
     ],
     install_requires=[
-        "pyppeteer @ git+https://github.com/miyakogi/pyppeteer.git@dev",
+        pyppeteer2
     ],
     test_requires=['pytest', 'pytest_asyncio'])
