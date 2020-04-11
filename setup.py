@@ -26,6 +26,6 @@ setuptools.setup(
         'Topic :: Scientific/Engineering :: Information Analysis'
     ],
     install_requires=[
-        pyppeteer2
+        'pyppeteer2'
     ],
     test_requires=['pytest', 'pytest_asyncio'])
