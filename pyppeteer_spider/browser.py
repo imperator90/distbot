@@ -55,10 +55,10 @@ class BrowserManager():
         self.incognito = incognito
         self.disable_images = disable_images
         self.max_consec_browser_errors = max_consec_browser_errors
-        self.proxy_addr_gen = self.cyclic_gen__(
+        self.proxy_addr_gen = self.__cyclic_gen(
             proxy_addr
         )  # If multiple proxy addresses are provided, they will be used cyclicly as browsers are created.
-        self.user_data_dir_gen = self.cyclic_gen__(
+        self.user_data_dir_gen = self.__cyclic_gen(
             user_data_dir
         )  # If multiple chrome profiles are provided, they will be used cyclicly as browsers are created.
         self.browser_executable = browser_executable
@@ -89,7 +89,7 @@ class BrowserManager():
             self.launch_options)
         # Add callback that will be called in case of disconnection with Chrome Dev Tools.
         browser._connection.setClosedCallback(
-            self.on_connection_close__)
+            self.__on_connection_close)
         # Add self.page_count pages (tabs) to the new browser.
         # A new browser has 1 page by default, so add 1 less than desired page_count.
         await self.page_manager.add_browser_page_s(browser,
