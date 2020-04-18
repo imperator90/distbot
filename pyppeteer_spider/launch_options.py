@@ -25,7 +25,8 @@ def get_launch_options(headless: bool, incognito: bool, disable_images: bool,
     launch_args = [
         # If disable-web-security is set, links within iframes are collected as those of parent frames. If it's not, the source attributes of the iframes are collected as links.
         '--disable-web-security',
-        '--no-sandbox'
+        '--no-sandbox',
+        '--start-maximized'
     ]
     if incognito:
         launch_args.append('--incognito')
