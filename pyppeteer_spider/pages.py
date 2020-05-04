@@ -87,7 +87,8 @@ class PageManager:
         """Set a new user agent and optionally clear all cookies."""
         if self.delete_cookies:
             await page._client.send('Network.clearBrowserCookies')
-        await page.setUserAgent(random.choice(self.user_agents))
+        await page.setUserAgent(
+            random.choice(self.user_agents))
         return page
 
     async def set_idle(self, page_s_brow: Union[Page, List[Page],
@@ -114,22 +115,23 @@ class PageManager:
     async def add_browser_page_s(self, browser: Browser,
                                  page_count: int) -> List[Page]:
         """Add page_count new pages to browser"""
-        if page_count > 0:
-            self.logger.info(f"Adding {page_count} page(s) to browser.")
-            new_pages = []
-            for _ in range(page_count):
-                if self.incognito:
-                    # Create a new incognito browser context.
-                    # This won't share cookies/cache with other browser contexts.
-                    context = await browser.createIncognitoBrowserContext()
-                    # Create a new page in context.
-                    page = await context.newPage()
-                else:
-                    page = await browser.newPage()
-                new_pages.append(page)
-            self.logger.info(
-                f"Finished initializing {page_count} browser page(s).")
-            return new_pages
+        if page_count < 0:
+            return
+        self.logger.info(f"Adding {page_count} page(s) to browser.")
+        new_pages = []
+        for _ in range(page_count):
+            if self.incognito:
+                # Create a new incognito browser context.
+                # This won't share cookies/cache with other browser contexts.
+                context = await browser.createIncognitoBrowserContext()
+                # Create a new page in context.
+                page = await context.newPage()
+            else:
+                page = await browser.newPage()
+            new_pages.append(page)
+        self.logger.info(
+            f"Finished initializing {page_count} browser page(s).")
+        return new_pages
 
     async def add_page_settings(
             self, page_s_brow: Union[Page, List[Page], Browser]) -> None:
@@ -184,14 +186,14 @@ class PageManager:
                 f"Setting request interception for {self.request_abort_types}")
             tasks.append(page.setRequestInterception(True))
 
-            async def filter_type(request):
+            async def block_type(request):
                 if request.resourceType in self.request_abort_types:
                     await request.abort()
                 else:
                     await request.continue_()
 
             page.on('request',
-                    lambda request: asyncio.create_task(filter_type(request)))
+                    lambda request: asyncio.create_task(block_type(request)))
         await asyncio.gather(*tasks)
 
     async def __to_pages(self, page_s_brow: Union[Page, List[Page],

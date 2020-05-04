@@ -137,7 +137,7 @@ class PyppeteerSpider:
     async def set_idle(self, page: Page) -> None:
         await self.page_manager.set_idle(page)
 
-    async def get(self, url, retries=3, return_response=False, **kwargs):
+    async def get(self, url, retries=3, response=False, **kwargs):
         """Navigate to url."""
         try:
             page = await self.get_page()
@@ -160,7 +160,7 @@ class PyppeteerSpider:
             self.logger.info(f"[{status}] ({page.browser}, {page}) {page.url}")
             await self.browser_manager.browser_error(page.browser, False)
             self.status_codes[status] += 1
-            if return_response:
+            if response:
                 return resp, page
             return page  # Make sure to return page to idle_pages when done with it!
         except Exception as e:
@@ -176,7 +176,7 @@ class PyppeteerSpider:
             self.logger.warning(
                 f"Retrying request to {url}. Retries remaining: {retries}")
             return await asyncio.create_task(
-                self.get(url, retries, return_response, **kwargs))
+                self.get(url, retries, response, **kwargs))
         self.logger.error(f"Max retries exceeded. {url} can not be processed.")
 
     async def scroll_page(self, page: Page):
