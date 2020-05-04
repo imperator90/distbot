@@ -9,6 +9,7 @@ from pyppeteer.page import Page
 from typing import Optional, List, Dict, Union, Any
 from collections import defaultdict
 from pprint import pformat
+from time import time
 import pathlib
 from pathlib import Path
 import platform
@@ -17,17 +18,6 @@ import random
 import logging
 import sys
 
-# Prevent websocket disconnection with Chrome.
-default_socket_conn = pyppeteer.connection.websockets.client.connect
-
-
-def no_timeout_socket_conn(*args, **kwargs):
-    kwargs['ping_interval'] = None
-    kwargs['ping_timeout'] = None
-    return default_socket_conn(*args, **kwargs)
-
-
-pyppeteer.connection.websockets.client.connect = no_timeout_socket_conn
 
 log_save_path = pathlib.Path(__file__).parent.joinpath('logs/spider.log')
 
@@ -120,12 +110,14 @@ class PyppeteerSpider:
             'Total Connections Closed':
             self.browser_manager.total_connections_closed,
             'Status Codes': dict(self.status_codes),
-            'Exceptions': dict(self.exceptions)
+            'Exceptions': dict(self.exceptions),
+            'Total Runtime': time()-self.launch_time
         }
 
     async def launch(self) -> 'PyppeteerSpider':
         """Open browser(s)."""
         self.logger.info("Launching spider.")
+        self.launch_time = time()
         await self.browser_manager.add_managed_browser(self.browser_count)
         return self
 
