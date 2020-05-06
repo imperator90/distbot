@@ -26,8 +26,8 @@ class PyppeteerSpider:
     """Spider that cyclically distributes requests among multiple browsers/pages with custom settings ideal for scraping."""
     def __init__(
         self,
-        browser_page_count: int = 1,  # Number of tabs per browser.
-        browser_count: int = 1,  # Number of browsers.
+        pages: int = 1,  # Number of tabs per browser.
+        browsers: int = 1,  # Number of browsers.
         default_nav_timeout:
         int = 30000,  # Default maximum navigation timeout. Units: ms
         max_consec_browser_errors:
@@ -69,7 +69,7 @@ class PyppeteerSpider:
                 f"Python version >= 3.7 is required. Detected version: {sys.version_info}. Exiting."
             )
             sys.exit(1)
-        self.browser_count = browser_count
+        self.browser_count = browsers
         self.page_manager = PageManager(
             default_nav_timeout=default_nav_timeout,
             disable_cache=disable_cache,
@@ -84,7 +84,7 @@ class PyppeteerSpider:
             user_agent_type=user_agent_type)
         self.browser_manager = BrowserManager(
             page_manager=self.page_manager,
-            browser_page_count=browser_page_count,
+            pages=pages,
             headless=headless,
             incognito=incognito,
             disable_images=disable_images,

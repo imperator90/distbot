@@ -25,7 +25,7 @@ class BrowserManager():
     def __init__(
         self,
         page_manager: PageManager,
-        browser_page_count: int = 1,  # Number of tabs per browser.
+        pages: int = 1,  # Number of tabs per browser.
         headless: bool = False,  # Run browser in headless mode.
         incognito: bool = False,  # Run browser in incognito mode.
         disable_images: bool = False,  # Load pages without images.
@@ -50,7 +50,7 @@ class BrowserManager():
                                  log_save_path=log_save_path,
                                  log_level=log_level)
         self.page_manager = page_manager
-        self.browser_page_count = browser_page_count
+        self.page_count = pages
         self.headless = headless
         self.incognito = incognito
         self.disable_images = disable_images
@@ -93,7 +93,7 @@ class BrowserManager():
         # Add self.page_count pages (tabs) to the new browser.
         # A new browser has 1 page by default, so add 1 less than desired page_count.
         await self.page_manager.add_browser_page_s(browser,
-                                                   self.browser_page_count - 1)
+                                                   self.page_count - 1)
         # Add custom settings to each of the browser's pages.
         await self.page_manager.add_page_settings(browser)
         # Add all of browser's pages to idle page queue.
