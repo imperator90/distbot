@@ -54,7 +54,7 @@ class PyppeteerSpider:
             List[str],
             str]] = None,  # Path to Chrome profile directory. Default will use temp directory.
         browser_executable: Optional[
-            str] = None,  # Path to Chrome or Chromium executable. If None, Chromium will be downloaded.
+            str] = '/usr/bin/google-chrome-unstable',  # Path to Chrome or Chromium executable. If None, Chromium will be downloaded.
         user_agent_type: Union['Linux', 'Darwin', 'Windows'] = platform.system(
         ),  # Select a user agent type. Default will be current system.
         log_level: int = logging.INFO,
