@@ -64,7 +64,7 @@ class PageManager:
         return self.idle_pages.qsize()
 
 
-    async def get_page(self) -> Tuple[bool, Page]:
+    async def get_page(self, keep_queued: bool = False) -> Tuple[bool, Page]:
         """Get next page from the idle queue and check if the page's browser has crashed."""
         wait_start = time()
         page = await self.idle_pages.get()
@@ -72,9 +72,11 @@ class PageManager:
             self.logger.warning(
                 "Found closed page in idle page queue. Page will be replaced.")
             await self.add_browser_page_s(page.browser, page_count=1)
-            return await self.get_page()
+            return await self.get_page(keep_queued)
         self.logger.debug(
             f"({self}) Got idle page in {round(time()-wait_start,2)}s")
+        if keep_queued:
+            await self.idle_pages.put(page)
         # All page functions will hang if browser has crashed.
         try:
             page = await asyncio.wait_for(

@@ -95,6 +95,7 @@ class PyppeteerSpider:
             browser_executable=browser_executable,
             log_file_path=log_file_path,
             default_viewport=default_viewport)
+        self.keep_page_queued = True if browsers == 1 and pages == 1 else False
         self.browser_count = browsers
         self.status_codes = defaultdict(int)
         self.exceptions = defaultdict(int)
@@ -120,13 +121,15 @@ class PyppeteerSpider:
         """Open browser(s)."""
         self.logger.info("Launching spider.")
         self.launch_time = time()
-        await self.browser_manager.add_managed_browser(self.browser_count)
+        await self.browser_manager.add_managed_browser(
+            self.browser_count)
         return self
 
 
     async def get_page(self) -> Page:
         """Get next page from queue."""
-        browser_ok, page = await self.page_manager.get_page()
+        browser_ok, page = await self.page_manager.get_page(
+            self.keep_page_queued)
         if not browser_ok:
             self.logger.error(f"Detected browser crash.")
             await self.browser_manager.replace_browser(page.browser)
