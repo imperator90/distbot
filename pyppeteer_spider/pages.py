@@ -4,7 +4,6 @@ from pyppeteer.page import Page
 from pyppeteer.browser import Browser
 
 import asyncio
-import pathlib
 from pathlib import Path
 from typing import List, Optional, Union, Tuple
 from time import time
@@ -22,7 +21,7 @@ class PageManager:
         headless: bool = False,  # Run browser in headless mode.
         incognito: bool = False,  # Run browser in incognito mode.
         log_level: int = logging.INFO,
-        log_file_path: Optional[Union[str, pathlib.Path]] = None,
+        log_file_path: Optional[Union[str, Path]] = None,
         default_nav_timeout: Optional[
             int] = None,  # Change Pyppeteer's default maximum navigation timeout. (Units: ms, default is 30000ms)
         blocked_urls: Optional[List[
@@ -48,7 +47,6 @@ class PageManager:
         self.js_injection_scripts = js_injection_scripts
         self.request_abort_types = request_abort_types
         self.idle_pages = asyncio.Queue()
-
         if user_agent_type == "Linux":
             self.user_agents = agent_lists.linux_user_agents
         elif user_agent_type == "Darwin":
@@ -60,9 +58,11 @@ class PageManager:
                                 agent_lists.mac_user_agents + \
                                 agent_lists.linux_user_agents
 
+
     @property
     def idle_page_count(self) -> int:
         return self.idle_pages.qsize()
+
 
     async def get_page(self) -> Tuple[bool, Page]:
         """Get next page from the idle queue and check if the page's browser has crashed."""
@@ -76,12 +76,13 @@ class PageManager:
         self.logger.debug(
             f"({self}) Got idle page in {round(time()-wait_start,2)}s")
         # All page functions will hang if browser has crashed.
-        browser_ok = True
         try:
-            page = await asyncio.wait_for(self.__prep_page(page), timeout=5)
+            page = await asyncio.wait_for(
+                self.__prep_page(page), timeout=5)
         except asyncio.TimeoutError:
-            browser_ok = False
-        return browser_ok, page
+            return False, page
+        return True, page
+
 
     async def __prep_page(self, page: Page) -> Page:
         """Set a new user agent and optionally clear all cookies."""
@@ -91,15 +92,17 @@ class PageManager:
             random.choice(self.user_agents))
         return page
 
+
     async def set_idle(self, page_s_brow: Union[Page, List[Page],
                                                 Browser]) -> None:
         """Add page(s) to the idle queue."""
-        tasks = []
         for page in await self.__to_pages(page_s_brow):
             if page not in self.idle_pages._queue:
                 self.logger.debug(f"Adding page {page} to idle page queue.")
-                tasks.append(self.idle_pages.put(page))
-        await asyncio.gather(*tasks)
+                await self.idle_pages.put(page)
+            else:
+                self.logger.debug(f"Page ({page}) already in idle page queue. Will not add again.")
+
 
     async def remove_page_s(
             self, page_s_brow: Union[Page, List[Page], Browser]) -> None:
@@ -110,7 +113,9 @@ class PageManager:
             if page in self.idle_pages._queue:
                 self.idle_pages._queue.remove(page)
         for page in pages:
-            asyncio.create_task(self.close_page(page))
+            asyncio.create_task(
+                self.close_page(page))
+
 
     async def add_browser_page_s(self, browser: Browser,
                                  page_count: int) -> List[Page]:
@@ -133,68 +138,69 @@ class PageManager:
             f"Finished initializing {page_count} browser page(s).")
         return new_pages
 
+
     async def add_page_settings(
             self, page_s_brow: Union[Page, List[Page], Browser]) -> None:
         """Add custom settings to page(s)."""
+        async def __add_page_settings(page):
+            """Add custom settings to page."""
+            # Change the default maximum navigation timeout.
+            if self.default_nav_timeout:
+                page.setDefaultNavigationTimeout(self.default_nav_timeout)
+            tasks = []
+            # Blocks URLs from loading.
+            if self.blocked_urls:
+                self.logger.info(f"Adding {len(self.blocked_urls)} blocked urls")
+                tasks.append(
+                    page._client.send('Network.setBlockedURLs', {
+                        'urls': self.blocked_urls,
+                    }))
+            # Disable cache for each request.
+            if self.disable_cache:
+                self.logger.info("Setting cache disabled.")
+                tasks.append(page.setCacheEnabled(False))
+            # Add a JavaScript function(s) that will be invoked whenever the page is navigated.
+            if self.js_injection_scripts:
+                self.logger.info(
+                    f"Adding {len(self.js_injection_scripts)} JavaScript injection scripts"
+                )
+                for script in self.js_injection_scripts:
+                    tasks.append(page.evaluateOnNewDocument(script))
+            # Add a JavaScript functions to prevent automation detection.
+            for f in Path(__file__).parent.joinpath('automation_detection').glob(
+                    "*.js"):
+                self.logger.info(
+                    f"(page {page}) Adding automation detection prevention script: {f.name}"
+                )
+                tasks.append(page.evaluateOnNewDocument(f.read_text()))
+            # Add JavaScript functions to prevent detection of headless mode.
+            if self.headless:
+                for f in Path(__file__).parent.joinpath('headless_detection').glob(
+                        "*.js"):
+                    self.logger.info(
+                        f"(page {page}) Adding headless detection prevention script: {f.name}"
+                    )
+                    tasks.append(page.evaluateOnNewDocument(f.read_text()))
+            # Intercept all request and only allow requests for types not in self.request_abort_types.
+            if self.request_abort_types:
+                self.logger.info(
+                    f"Setting request interception for {self.request_abort_types}")
+                tasks.append(page.setRequestInterception(True))
+
+                async def block_type(request):
+                    if request.resourceType in self.request_abort_types:
+                        await request.abort()
+                    else:
+                        await request.continue_()
+
+                page.on('request',
+                        lambda request: asyncio.create_task(block_type(request)))
+            await asyncio.gather(*tasks)
         pages = await self.__to_pages(page_s_brow)
         self.logger.info(f"Adding settings to {len(pages)} page(s).")
         await asyncio.gather(
-            *[self.__add_page_settings(page) for page in pages])
+            *[__add_page_settings(page) for page in pages])
 
-    async def __add_page_settings(self, page: Page) -> None:
-        """Add custom settings to page."""
-        # Change the default maximum navigation timeout.
-        if self.default_nav_timeout:
-            page.setDefaultNavigationTimeout(self.default_nav_timeout)
-        tasks = []
-        # Blocks URLs from loading.
-        if self.blocked_urls:
-            self.logger.info(f"Adding {len(self.blocked_urls)} blocked urls")
-            tasks.append(
-                page._client.send('Network.setBlockedURLs', {
-                    'urls': self.blocked_urls,
-                }))
-        # Disable cache for each request.
-        if self.disable_cache:
-            self.logger.info("Setting cache disabled.")
-            tasks.append(page.setCacheEnabled(False))
-        # Add a JavaScript function(s) that will be invoked whenever the page is navigated.
-        if self.js_injection_scripts:
-            self.logger.info(
-                f"Adding {len(self.js_injection_scripts)} JavaScript injection scripts"
-            )
-            for script in self.js_injection_scripts:
-                tasks.append(page.evaluateOnNewDocument(script))
-        # Add a JavaScript functions to prevent automation detection.
-        for f in Path(__file__).parent.joinpath('automation_detection').glob(
-                "*.js"):
-            self.logger.info(
-                f"(page {page}) Adding automation detection prevention script: {f.name}"
-            )
-            tasks.append(page.evaluateOnNewDocument(f.read_text()))
-        # Add JavaScript functions to prevent detection of headless mode.
-        if self.headless:
-            for f in Path(__file__).parent.joinpath('headless_detection').glob(
-                    "*.js"):
-                self.logger.info(
-                    f"(page {page}) Adding headless detection prevention script: {f.name}"
-                )
-                tasks.append(page.evaluateOnNewDocument(f.read_text()))
-        # Intercept all request and only allow requests for types not in self.request_abort_types.
-        if self.request_abort_types:
-            self.logger.info(
-                f"Setting request interception for {self.request_abort_types}")
-            tasks.append(page.setRequestInterception(True))
-
-            async def block_type(request):
-                if request.resourceType in self.request_abort_types:
-                    await request.abort()
-                else:
-                    await request.continue_()
-
-            page.on('request',
-                    lambda request: asyncio.create_task(block_type(request)))
-        await asyncio.gather(*tasks)
 
     async def __to_pages(self, page_s_brow: Union[Page, List[Page],
                                                  Browser]) -> None:
@@ -206,6 +212,7 @@ class PageManager:
         if isinstance(page_s_brow, (list, tuple)):
             return page_s_brow
         raise ValueError("Argument should be in (Page, Browser, list, tuple)")
+
 
     async def close_page(self, page: Page) -> None:
         """Attempt to close a page."""

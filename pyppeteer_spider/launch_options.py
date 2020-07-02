@@ -3,9 +3,9 @@ import pyppeteer.launcher
 
 from typing import Optional, Dict, Union
 from pprint import pformat
-import pathlib
 from pathlib import Path
-import logging
+from logging import Logger
+
 
 # Remove Pyppeteer's default arguments that we don't want to use for scraping.
 unwanted_default_args = ['--disable-popup-blocking', '--disable-extensions']
@@ -17,10 +17,10 @@ for arg in unwanted_default_args:
 def get_launch_options(headless: bool, incognito: bool, disable_images: bool,
                        user_data_dir: Optional[str],
                        default_viewport: Optional[Dict[str, int]],
-                       browser_executable: Optional[Union[pathlib.Path, str]],
+                       browser_executable: Optional[Union[Path, str]],
                        browser_memory_limit: Optional[int],
                        proxy_addr: Optional[str],
-                       logger: logging.Logger) -> Dict[str, str]:
+                       logger: Logger) -> Dict[str, str]:
     """Add flags to launch command based on user settings."""
     launch_args = [
         # If disable-web-security is set, links within iframes are collected as those of parent frames. If it's not, the source attributes of the iframes are collected as links.

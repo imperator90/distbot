@@ -69,7 +69,6 @@ class PyppeteerSpider:
                 f"Python version >= 3.7 is required. Detected version: {sys.version_info}. Exiting."
             )
             sys.exit(1)
-        self.browser_count = browsers
         self.page_manager = PageManager(
             default_nav_timeout=default_nav_timeout,
             disable_cache=disable_cache,
@@ -96,9 +95,11 @@ class PyppeteerSpider:
             browser_executable=browser_executable,
             log_file_path=log_file_path,
             default_viewport=default_viewport)
+        self.browser_count = browsers
         self.status_codes = defaultdict(int)
         self.exceptions = defaultdict(int)
         self.total_requests = 0
+
 
     @property
     def stats(self) -> Dict[str, Any]:
@@ -114,12 +115,14 @@ class PyppeteerSpider:
             'Total Runtime': time()-self.launch_time
         }
 
+
     async def launch(self) -> 'PyppeteerSpider':
         """Open browser(s)."""
         self.logger.info("Launching spider.")
         self.launch_time = time()
         await self.browser_manager.add_managed_browser(self.browser_count)
         return self
+
 
     async def get_page(self) -> Page:
         """Get next page from queue."""
@@ -134,8 +137,10 @@ class PyppeteerSpider:
             return await self.get_page()
         return page
 
+
     async def set_idle(self, page: Page) -> None:
         await self.page_manager.set_idle(page)
+
 
     async def get(self, url, retries=3, response=False, **kwargs):
         """Navigate to url."""
@@ -179,7 +184,8 @@ class PyppeteerSpider:
                 self.get(url, retries, response, **kwargs))
         self.logger.error(f"Max retries exceeded. {url} can not be processed.")
 
-    async def scroll_page(self, page: Page):
+
+    async def scroll(self, page: Page):
         """Scroll to the bottom of a page."""
         prev_loop_same_height = False
         last_height = await page.evaluate("() => document.body.scrollHeight")
@@ -200,25 +206,28 @@ class PyppeteerSpider:
         except Exception as e:
             logging.warning(f"Page at {page.url} not scollable: {e}")
 
-    async def hover_elements(self,
-                             page: Page,
-                             ele_xpath: str,
-                             ele_min_sleep: float = 0.5,
-                             ele_max_sleep: int = 1,
-                             last_ele_idx: int = 0):
+
+    async def hover(self,
+                    page: Page,
+                    ele_xpath: str,
+                    ele_min_sleep: float = 0.5,
+                    ele_max_sleep: int = 1,
+                    last_ele_idx: int = 0):
         """Hover over all elements at ele_xpath."""
         await page.waitForXPath(ele_xpath)
         eles = await page.xpath(ele_xpath)
         ele_count = len(eles)
         for i in range(last_ele_idx, ele_count):
-            await asyncio.sleep(random.uniform(ele_min_sleep, ele_max_sleep))
+            await asyncio.sleep(
+                random.uniform(ele_min_sleep, ele_max_sleep))
             await eles[i].hover()
         new_last_ele_idx = ele_count
         if new_last_ele_idx != last_ele_idx:
             return await asyncio.create_task(
-                self.hover_elements(page, ele_xpath, ele_min_sleep,
-                                    ele_max_sleep, new_last_ele_idx))
+                self.hover(page, ele_xpath, ele_min_sleep,
+                            ele_max_sleep, new_last_ele_idx))
         logging.info(f"Hovered all {ele_xpath} elements.")
+
 
     async def shutdown(self) -> None:
         await self.browser_manager.shutdown()

@@ -5,10 +5,9 @@ from pyppeteer_spider.utils import get_logger
 import pyppeteer.launcher
 from pyppeteer.browser import Browser
 
-import asyncio
 from typing import Optional, List, Dict, Union, Generator, Any
-import pathlib
 from pathlib import Path
+import asyncio
 import logging
 
 
@@ -32,7 +31,7 @@ class BrowserManager():
         max_consec_browser_errors:
         int = 4,  # Max allowable consecutive browser errors before browser will be replaced.
         log_level: int = logging.INFO,
-        log_file_path: Optional[Union[str, pathlib.Path]] = None,
+        log_file_path: Optional[Union[str, Path]] = None,
         proxy_addr: Optional[Union[List[str],
                                    str]] = None,  # Address of proxy server.
         user_data_dir: Optional[Union[
@@ -69,6 +68,7 @@ class BrowserManager():
         self.total_browser_replaces = 0
         self.total_connections_closed = 0
 
+
     @property
     def launch_options(self) -> Dict[str, str]:
         """Add flags to launch command based on user settings."""
@@ -82,6 +82,7 @@ class BrowserManager():
             default_viewport=self.default_viewport,
             browser_memory_limit=self.browser_memory_limit,
             logger=self.logger)
+
 
     async def get_browser(self) -> Browser:
         """Launch a new browser."""
@@ -101,11 +102,13 @@ class BrowserManager():
         self.logger.info(f"Finished initializing browser {browser}")
         return browser
 
+
     async def add_managed_browser(self, browser_count: int = 1) -> None:
         """Launch a new managed browser."""
         for _ in range(browser_count):
             browser = await self.get_browser()
             self.managed_browsers[browser] = ManagedBrowser(browser)
+
 
     def __on_connection_close(self) -> None:
         """Find browser with closed websocket connection and replace it."""
@@ -116,6 +119,7 @@ class BrowserManager():
             elif not browser._connection.connection.open:
                 asyncio.create_task(self.replace_browser(browser))
         self.total_connections_closed += 1
+
 
     async def remove_browser(self, browser: Browser) -> None:
         """Close browser and remove all references."""
@@ -131,6 +135,7 @@ class BrowserManager():
         if browser in self.managed_browsers:
             return self.managed_browsers[browser].lock.locked()
         return False
+
 
     async def replace_browser(self, browser: Browser) -> None:
         """Close a browser and launch a new one."""
@@ -155,6 +160,7 @@ class BrowserManager():
                 await add_task
                 self.total_browser_replaces += 1
 
+
     async def browser_error(self, browser: Browser, error: bool) -> None:
         """Replaces browser after exceeding maximum allowable consecutive browser errors.
             This should be call after each time the browser fetches a page.
@@ -177,12 +183,14 @@ class BrowserManager():
                 else:
                     managed_browser.consec_errors = 0
 
+
     async def shutdown(self) -> None:
         """Close all browsers."""
         await asyncio.gather(*[
             self.remove_browser(browser)
             for browser in list(self.managed_browsers.keys())
         ])
+
 
     def __cyclic_gen(self, arg) -> Generator[Any, None, None]:
         """Return a cyclic generator."""
