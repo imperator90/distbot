@@ -3,7 +3,7 @@ from pathlib import Path
 
 setuptools.setup(
     name='pyppeteer_spider',
-    version='1.0.3',
+    version='1.1.0',
     author='Dan Kelleher',
     author_email='danielkelleher@protonmail.com',
     maintainer='Dan Kelleher',
