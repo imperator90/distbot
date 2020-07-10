@@ -1,6 +1,7 @@
 from pyppeteer_spider.spider import PyppeteerSpider
 import pytest
 import pytest_asyncio
+import random
 import asyncio
 import signal
 import json
@@ -18,16 +19,16 @@ async def test_idle_page_queue(browsers, pages):
                                    pages=pages,
                                    browsers=browsers).launch()
     # check that all pages from all browsers were added to the idle page queue.
-    assert (spider.page_manager.idle_page_count == browsers * pages)
-    _, page = await spider.page_manager.get_page()
+    assert (spider.pm.idle_page_count == browsers * pages)
+    _, page = await spider.pm.get_page()
     # check that the returned page has been popped from the idle page queue.
-    assert (spider.page_manager.idle_page_count == browsers * pages - 1)
-    await spider.page_manager.set_idle(page)
+    assert (spider.pm.idle_page_count == browsers * pages - 1)
+    await spider.pm.set_idle(page)
     # check that the page has been added back to the idle page queue.
-    assert (spider.page_manager.idle_page_count == browsers * pages)
-    await spider.page_manager.set_idle(page)
+    assert (spider.pm.idle_page_count == browsers * pages)
+    await spider.pm.set_idle(page)
     # check that the same page won't get added to the idle page queue multiple times.
-    assert (spider.page_manager.idle_page_count == browsers * pages)
+    assert (spider.pm.idle_page_count == browsers * pages)
     await spider.shutdown()
 
 
@@ -61,6 +62,7 @@ async def test_page_iter(pages, browsers):
         all_ids.append(id(page))
         await spider.set_idle(page)
     assert (len(set(all_ids)) * loop_count == len(all_ids))
+    await spider.shutdown()
 
 
 async def test_browser_replace():
@@ -70,10 +72,27 @@ async def test_browser_replace():
         headless=True,
         browsers=browsers,
         max_consec_browser_errors=max_consec_browser_errors).launch()
-    browser = list(spider.browser_manager.managed_browsers.keys())[0]
+    browser = list(spider.bm.managed_browsers.keys())[0]
     # log enough errors to trigger browser replacement 10 times and check that it only gets replaced once.
     for _ in range(10 * max_consec_browser_errors):
-        await spider.browser_manager.browser_error(browser, True)
-    assert (spider.browser_manager.total_browser_replaces == 1)
-    assert (browser not in spider.browser_manager.managed_browsers)
-    assert (len(spider.browser_manager.managed_browsers) == browsers)
+        await spider.bm.browser_error(browser, True)
+    assert (spider.bm.total_browser_replaces == 1)
+    assert (browser not in spider.bm.managed_browsers)
+    assert (len(spider.bm.managed_browsers) == browsers)
+    await spider.shutdown()
+
+
+@pytest.mark.parametrize('browsers', [2, 4])
+@pytest.mark.parametrize('pages', [1, 2])
+async def test_browser_shutdown(pages, browsers):
+    spider = await PyppeteerSpider(
+        headless=True,
+        browsers=browsers,
+        pages=pages).launch()
+    browsers = list(spider.bm.managed_browsers.keys())
+    browser = random.choice(browsers)
+    await spider.shutdown(browser)
+    browsers_after = list(spider.bm.managed_browsers.keys())
+    assert(browser not in browsers_after)
+    assert(len(browsers_after)==len(browsers)-1)
+    await spider.shutdown()

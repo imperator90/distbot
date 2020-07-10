@@ -123,6 +123,7 @@ class BrowserManager():
 
     async def remove_browser(self, browser: Browser) -> None:
         """Close browser and remove all references."""
+        self.logger.debug(f"Removing browser: {browser}")
         del self.managed_browsers[browser]
         try:
             browser._connection._closeCallback = None
@@ -184,9 +185,13 @@ class BrowserManager():
                     managed_browser.consec_errors = 0
 
 
-    async def shutdown(self) -> None:
-        """Close all browsers."""
-        await asyncio.gather(*[
+    async def shutdown(self, browser: Browser=None) -> None:
+        """Close browser(s)."""
+        if browser:
+            self.logger.debug(f"Shutting down browser: {browser}")
+            return await self.remove_browser(browser)
+        self.logger.debug(f"Shutting down all browsers.")
+        return await asyncio.gather(*[
             self.remove_browser(browser)
             for browser in list(self.managed_browsers.keys())
         ])

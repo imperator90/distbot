@@ -5,6 +5,7 @@ from pyppeteer_spider.utils import get_logger
 import pyppeteer.errors
 import pyppeteer.connection
 from pyppeteer.page import Page
+from pyppeteer.browser import Browser
 
 from typing import Optional, List, Dict, Union, Any
 from collections import defaultdict
@@ -69,7 +70,7 @@ class PyppeteerSpider:
                 f"Python version >= 3.7 is required. Detected version: {sys.version_info}. Exiting."
             )
             sys.exit(1)
-        self.page_manager = PageManager(
+        self.pm = PageManager(
             default_nav_timeout=default_nav_timeout,
             disable_cache=disable_cache,
             delete_cookies=delete_cookies,
@@ -81,8 +82,8 @@ class PyppeteerSpider:
             request_abort_types=request_abort_types,
             log_file_path=log_file_path,
             user_agent_type=user_agent_type)
-        self.browser_manager = BrowserManager(
-            page_manager=self.page_manager,
+        self.bm = BrowserManager(
+            page_manager=self.pm,
             pages=pages,
             headless=headless,
             incognito=incognito,
@@ -108,9 +109,9 @@ class PyppeteerSpider:
         return {
             'Total Requests': self.total_requests,
             'Total Browser Replaces':
-            self.browser_manager.total_browser_replaces,
+            self.bm.total_browser_replaces,
             'Total Connections Closed':
-            self.browser_manager.total_connections_closed,
+            self.bm.total_connections_closed,
             'Status Codes': dict(self.status_codes),
             'Exceptions': dict(self.exceptions),
             'Total Runtime': time()-self.launch_time
@@ -121,20 +122,20 @@ class PyppeteerSpider:
         """Open browser(s)."""
         self.logger.info("Launching spider.")
         self.launch_time = time()
-        await self.browser_manager.add_managed_browser(
+        await self.bm.add_managed_browser(
             self.browser_count)
         return self
 
 
     async def get_page(self) -> Page:
         """Get next page from queue."""
-        browser_ok, page = await self.page_manager.get_page(
+        browser_ok, page = await self.pm.get_page(
             self.keep_page_queued)
         if not browser_ok:
             self.logger.error(f"Detected browser crash.")
-            await self.browser_manager.replace_browser(page.browser)
+            await self.bm.replace_browser(page.browser)
             return await self.get_page()
-        if self.browser_manager.replacing_browser(page.browser):
+        if self.bm.replacing_browser(page.browser):
             await self.set_idle(page)
             await asyncio.sleep(0.5)
             return await self.get_page()
@@ -142,7 +143,7 @@ class PyppeteerSpider:
 
 
     async def set_idle(self, page: Page) -> None:
-        await self.page_manager.set_idle(page)
+        await self.pm.set_idle(page)
 
 
     async def get(self, url, retries=3, response=False, **kwargs):
@@ -166,7 +167,7 @@ class PyppeteerSpider:
             resp = await page.goto(url, **kwargs)
             status = str(resp.status) if resp is not None else None
             self.logger.info(f"[{status}] ({page.browser}, {page}) {page.url}")
-            await self.browser_manager.browser_error(page.browser, False)
+            await self.bm.browser_error(page.browser, False)
             self.status_codes[status] += 1
             if response:
                 return resp, page
@@ -175,7 +176,7 @@ class PyppeteerSpider:
             self.logger.error(
                 f"Caught exception while fetching page {url}: {e}")
             self.exceptions[type(e)] += 1
-            await self.browser_manager.browser_error(page.browser, True)
+            await self.bm.browser_error(page.browser, True)
             await self.set_idle(
                 page
             )  # add the page back to idle pages if we're not reusing it.
@@ -232,5 +233,5 @@ class PyppeteerSpider:
         logging.info(f"Hovered all {ele_xpath} elements.")
 
 
-    async def shutdown(self) -> None:
-        await self.browser_manager.shutdown()
+    async def shutdown(self, browser: Browser=None) -> None:
+        await self.bm.shutdown(browser)

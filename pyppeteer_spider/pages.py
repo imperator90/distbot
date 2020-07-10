@@ -73,10 +73,10 @@ class PageManager:
                 "Found closed page in idle page queue. Page will be replaced.")
             await self.add_browser_page_s(page.browser, page_count=1)
             return await self.get_page(keep_queued)
-        self.logger.debug(
-            f"({self}) Got idle page in {round(time()-wait_start,2)}s")
         if keep_queued:
             await self.idle_pages.put(page)
+        self.logger.debug(
+            f"({self}) Got idle page in {round(time()-wait_start,2)}s")
         # All page functions will hang if browser has crashed.
         try:
             page = await asyncio.wait_for(
