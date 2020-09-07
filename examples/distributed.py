@@ -12,7 +12,6 @@ def load_urls(url_count=100_000):
     print("Loading urls..")
     with Path("alexatop1m.csv").open(mode='r') as i:
         urls = ['http://'+r[1] for r in csv.reader(i)]
-    print(f"Loaded {len(urls)} urls.")
     shuffle(urls)
     print(f"Returning {url_count} random urls.")
     return urls[:url_count]
@@ -31,7 +30,7 @@ async def fetch(url, spider):
         log_str += f'\t{title.strip()}'
     with Path("pages.tsv").open(mode='a+') as o:
         o.write(f'{log_str}\n')
-    # return page to idle queue so that it can be reused.
+    # return page to idle queue so the next task can use it.
     await spider.set_idle(page)
 
 
@@ -39,7 +38,9 @@ async def main(browsers=2, pages=2):
     urls = load_urls()
     spider = await Spider(browsers=browsers, pages=pages,
                           headless=True,
-                          keep_pages_queued=False).launch()
+                          # prevent multiple tasks from simultaneously navigating a page.
+                          keep_pages_queued=False
+                          ).launch()
     await asyncio.gather(
         *[asyncio.create_task(fetch(url, spider)) for url in urls])
     await spider.shutdown()
