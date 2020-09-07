@@ -8,7 +8,7 @@ import sys
 
 
 def load_urls(url_count=100_000):
-    """Load Alexa top 1,000,000 urls."""
+    """Get random urls from the Alexa top 1,000,000 list."""
     print("Loading urls..")
     with Path("alexatop1m.csv").open(mode='r') as i:
         urls = ['http://'+r[1] for r in csv.reader(i)]
