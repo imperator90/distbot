@@ -23,10 +23,10 @@ Number of browsers.
 *Default: 1*   
 
 **keep_pages_queued**   
-Spider's [get](./distbot/spider.py#L79) function blocks until a page object is available in its idle page queue. 
-If keep_pages_queued is False, pages will be removed from the idle queue before being returned from [get](./distbot/spider.py#L79).
+Spider's [get](./distbot/spider.py#L80) function blocks until a page object is available in its idle page queue. 
+If keep_pages_queued is False, pages will be removed from the idle queue before being returned from [get](./distbot/spider.py#L80).
 A page can later be put back on the idle queue with a call to Spider's [set_idle](./distbot/pages.py#L32) function.
-Removing pages from the idle queue is necessary when making asynchronous calls to [get](./distbot/spider.py#L79). This prevents the page from being
+Removing pages from the idle queue is necessary when making asynchronous calls to [get](./distbot/spider.py#L80). This prevents the page from being
 navigated while the end-user is still using the page in their script.   
 *Default: True*   
 
