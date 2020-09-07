@@ -1,0 +1,448 @@
+[Spider][INFO]2020-09-07 10:36:49,242: Launching spider.
+[Spider][INFO]2020-09-07 10:36:49,805: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f632e3a52b0>
+[Spider][INFO]2020-09-07 10:36:50,366: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f632d112fd0>
+[Spider][INFO]2020-09-07 10:37:04,413: [200] (Browser 140063954064048, Page 140063955234768) https://www.ellypistol.com/?lang=en
+[Spider][INFO]2020-09-07 10:37:05,530: [200] (Browser 140063954064048, Page 140063955231504) https://certifiedlanguages.com/
+[Spider][ERROR]2020-09-07 10:37:06,863: Error fetching page http://taharkhan.com: net::ERR_NAME_NOT_RESOLVED at http://taharkhan.com
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_NAME_NOT_RESOLVED at http://taharkhan.com
+[Spider][WARNING]2020-09-07 10:37:06,869: Browser (<pyppeteer.browser.Browser object at 0x7f632e3a52b0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 10:37:06,869: Retrying request to http://taharkhan.com. Retries remaining: 0
+[Spider][INFO]2020-09-07 10:37:08,656: [200] (Browser 140063954064048, Page 140063955234768) https://www.bbtv.com/
+[Spider][INFO]2020-09-07 10:37:08,715: [200] (Browser 140063954064048, Page 140063955231504) https://timesascent.com/
+[Spider][INFO]2020-09-07 10:37:08,727: [200] (Browser 140063934590928, Page 140063908839632) http://www.authors.com/
+[Spider][INFO]2020-09-07 10:37:10,379: [200] (Browser 140063934590928, Page 140063908839632) https://quran-hd.com/
+[Spider][INFO]2020-09-07 10:37:11,753: [200] (Browser 140063954064048, Page 140063955234768) http://ww11.onlinegsmfix.com/?sub1=20200908-0037-1043-93da-f7a615c3e887
+[Spider][INFO]2020-09-07 10:37:11,940: [200] (Browser 140063934590928, Page 140063908839632) http://anybunny.com/
+[Spider][INFO]2020-09-07 10:37:13,915: [200] (Browser 140063954064048, Page 140063955231504) https://happytimegames.com/
+[Spider][INFO]2020-09-07 10:37:16,661: [200] (Browser 140063934590928, Page 140063908839632) http://www.theoverclocker.com/
+[Spider][INFO]2020-09-07 10:37:24,484: [200] (Browser 140063934590928, Page 140063908839632) https://www.tigerrockliverpool.uk/
+[Spider][INFO]2020-09-07 10:37:25,599: [200] (Browser 140063954064048, Page 140063955231504) http://hendajmoon.com/
+[Spider][INFO]2020-09-07 10:37:27,640: [200] (Browser 140063934590928, Page 140063908839632) http://www.victor-duruy.org/
+[Spider][INFO]2020-09-07 10:37:32,232: [200] (Browser 140063934590928, Page 140063908841552) https://solusidigital.co.id/
+[Spider][INFO]2020-09-07 10:37:32,490: [200] (Browser 140063954064048, Page 140063955234768) http://wahabiyat.com/
+[Spider][INFO]2020-09-07 10:37:32,757: [200] (Browser 140063954064048, Page 140063955231504) https://munich-folks.com/
+[Spider][INFO]2020-09-07 10:37:33,093: [200] (Browser 140063934590928, Page 140063908839632) https://www.coronasplaya.com/
+[Spider][ERROR]2020-09-07 10:37:33,492: Error fetching page http://bonnsurio.biz: net::ERR_NAME_NOT_RESOLVED at http://bonnsurio.biz
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_NAME_NOT_RESOLVED at http://bonnsurio.biz
+[Spider][WARNING]2020-09-07 10:37:33,496: Browser (<pyppeteer.browser.Browser object at 0x7f632e3a52b0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 10:37:33,499: Retrying request to http://bonnsurio.biz. Retries remaining: 0
+[Spider][INFO]2020-09-07 10:37:35,356: [200] (Browser 140063954064048, Page 140063955231504) http://opencorpdata.com/
+[Spider][INFO]2020-09-07 10:37:37,682: [200] (Browser 140063934590928, Page 140063908839632) https://www.southalabama.edu/
+[Spider][INFO]2020-09-07 10:37:37,824: [200] (Browser 140063954064048, Page 140063955231504) https://freegalmusic.com/home
+[Spider][INFO]2020-09-07 10:37:40,317: [200] (Browser 140063934590928, Page 140063908841552) https://www.georgiasouthern.edu/
+[Spider][INFO]2020-09-07 10:37:41,487: [200] (Browser 140063934590928, Page 140063908839632) https://www.midulstermail.co.uk/
+[Spider][INFO]2020-09-07 10:37:45,972: [200] (Browser 140063954064048, Page 140063955231504) https://www.85kobo.com/
+[Spider][INFO]2020-09-07 10:37:46,409: [200] (Browser 140063934590928, Page 140063908841552) https://lalibrenotas.wordpress.com/
+[Spider][INFO]2020-09-07 10:37:46,539: [200] (Browser 140063954064048, Page 140063955234768) http://businessspread.co.uk/
+[Spider][INFO]2020-09-07 10:37:48,358: [200] (Browser 140063934590928, Page 140063908839632) http://pizza4you.cz/
+[Spider][INFO]2020-09-07 10:37:48,500: [200] (Browser 140063934590928, Page 140063908841552) http://tirupatisarjan.com/
+[Spider][INFO]2020-09-07 10:37:48,884: [200] (Browser 140063954064048, Page 140063955234768) http://dogdojo.org/
+[Spider][INFO]2020-09-07 10:37:49,957: [200] (Browser 140063954064048, Page 140063955231504) http://www.sunblog.org/
+[Spider][INFO]2020-09-07 10:37:50,237: [200] (Browser 140063934590928, Page 140063908839632) https://www.hugedomains.com/domain_profile.cfm?d=musashi-miyamoto&e=com
+[Spider][INFO]2020-09-07 10:37:54,731: [200] (Browser 140063934590928, Page 140063908839632) https://www.bigdata-insider.de/
+[Spider][INFO]2020-09-07 10:37:54,772: [200] (Browser 140063954064048, Page 140063955234768) https://reddot.com.au/
+[Spider][INFO]2020-09-07 10:37:57,528: [200] (Browser 140063954064048, Page 140063955234768) https://www.silverfamily.gr/
+[Spider][INFO]2020-09-07 10:37:57,608: [200] (Browser 140063954064048, Page 140063955231504) https://www.dermomanipulacoes.com.br/
+[Spider][INFO]2020-09-07 10:38:01,108: [200] (Browser 140063934590928, Page 140063908839632) https://familytraveller.com/usa/
+[Spider][INFO]2020-09-07 10:38:01,882: 
+{'Browser Replaces': 0,
+ 'Connections Closed': 0,
+ 'Exceptions': defaultdict(<class 'int'>,
+                           {"<class 'pyppeteer.errors.PageError'>": 2}),
+ 'Runtime': '0:01:12.637042',
+ 'Status Codes': defaultdict(<class 'int'>, {'200': 35}),
+ 'Total Requests': 35}
+
+[Spider][INFO]2020-09-07 10:38:03,678: [200] (Browser 140063954064048, Page 140063955234768) https://royalenfield.com.au/
+[Spider][INFO]2020-09-07 10:38:04,653: [200] (Browser 140063954064048, Page 140063955231504) https://www.well-storied.com/
+[Spider][INFO]2020-09-07 10:38:07,706: [200] (Browser 140063934590928, Page 140063908839632) https://www.cdkeyz.com/
+[Spider][INFO]2020-09-07 10:38:09,074: [200] (Browser 140063954064048, Page 140063955231504) https://stevenduxtrading.com/mindset2
+[Spider][INFO]2020-09-07 10:38:11,379: [200] (Browser 140063954064048, Page 140063955234768) http://fierisot.com/
+[Spider][INFO]2020-09-07 10:38:11,567: [200] (Browser 140063934590928, Page 140063908839632) https://if2.viewsecure.net/redirect?s=11165150&o=75&y=150&x=350&r=https%3A%2F%2Fwww.edmunds.com%2F%3Futm_medium%3Dsem%26utm_source%3Dadnet%26utm_account%3Dadnet%26utm_campaign%3DEdmunds_Homepage%26utm_adgroup%3Dedmunds_homepage%26utm_term%3Dedmunds%26utm_device%3D%7Bdevice%7D%26utm_matchtype%3D%7Bmatchtype%7D%26utm_targetid%3D%7Btargetid%7D%26utm_locinterest%3D%7Bloc_interest_ms%7D%26utm_locphysical%3D%7Bloc_physical_ms%7D%26utm_content%3Da013401757845017961387910064107455479649%26anid%3D013401757845017961387910064107455479649&u=013401757845017961387910064107455479649&a=72&t=5237627&g=-4682831320095095000~-1063334613202744202&cb=0&faid=5237627&fint=1&b=fefwfs,fefs,LWii&epcCD=1599489490712&cc=840&dma=533&epcRFU=null&tk=&k=&qk=itjoIoQtYqIN&mqk=itjoIoQtYqIN&eqk=null&eqke=0&nw=SEARCH&tgt=5237627&tp=wwwUSwSf-itjoIoQtYqINetaz&vu=null&ir=1&tt=RON&ck=0~0&rk=1&ptt=&f=https%3A%2F%2Fcelebhush.com%3Fanid%3D013401757845017961387910064107455479649&sc=null&st=null&id=0&it=0&nbrs=0&nk=5237627&fwc=1&lt=1&ltw=500&ltwmn=100&spa=&spt=&spc=&dvid=&sid=bb4a2c84-e4bf-4e4f-a3f6-554355ff96ed
+[Spider][ERROR]2020-09-07 10:38:11,783: Error fetching page http://flick-anticimex.com.au: net::ERR_ABORTED at http://flick-anticimex.com.au
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_ABORTED at http://flick-anticimex.com.au
+[Spider][WARNING]2020-09-07 10:38:11,787: Browser (<pyppeteer.browser.Browser object at 0x7f632d112fd0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 10:38:11,788: Retrying request to http://flick-anticimex.com.au. Retries remaining: 0
+[Spider][INFO]2020-09-07 10:38:15,543: [200] (Browser 140063934590928, Page 140063908839632) https://www.axa.com.co/
+[Spider][INFO]2020-09-07 10:38:16,078: [200] (Browser 140063954064048, Page 140063955234768) https://www.oregano.top/
+[Spider][INFO]2020-09-07 10:38:17,000: [200] (Browser 140063954064048, Page 140063955231504) https://www.eisenbahnforumvogtland.de/
+[Spider][INFO]2020-09-07 10:38:18,911: [200] (Browser 140063954064048, Page 140063955234768) https://xweareraversx.blogspot.com/
+[Spider][INFO]2020-09-07 10:38:19,983: [200] (Browser 140063934590928, Page 140063908839632) https://www.openfit.com/
+[Spider][INFO]2020-09-07 10:38:20,157: [200] (Browser 140063954064048, Page 140063955231504) http://felix-tintelnot.wikidot.com/
+[Spider][INFO]2020-09-07 10:38:22,225: [200] (Browser 140063954064048, Page 140063955234768) http://agahiroozname.ir/
+[Spider][INFO]2020-09-07 10:38:22,705: [404] (Browser 140063934590928, Page 140063908839632) http://kidebwaymnyamatz.com/
+[Spider][INFO]2020-09-07 10:38:23,755: [200] (Browser 140063954064048, Page 140063955234768) http://mjvreddy-interests.blogspot.com/
+[Spider][INFO]2020-09-07 10:38:25,872: [200] (Browser 140063934590928, Page 140063908839632) http://ci-360.se/
+[Spider][INFO]2020-09-07 10:38:26,209: [200] (Browser 140063954064048, Page 140063955234768) https://sosyalmedyakazan.com/
+[Spider][INFO]2020-09-07 10:38:27,019: [200] (Browser 140063934590928, Page 140063908839632) https://profilib.org/
+[Spider][ERROR]2020-09-07 10:38:27,164: Error fetching page http://avia.de: net::ERR_ABORTED at http://avia.de
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_ABORTED at http://avia.de
+[Spider][WARNING]2020-09-07 10:38:27,165: Browser (<pyppeteer.browser.Browser object at 0x7f632d112fd0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 10:38:27,166: Retrying request to http://avia.de. Retries remaining: 0
+[Spider][INFO]2020-09-07 10:38:28,678: [200] (Browser 140063954064048, Page 140063955231504) https://www.glprop.com/
+[Spider][INFO]2020-09-07 10:38:30,474: [200] (Browser 140063934590928, Page 140063908839632) https://survival.news/
+[Spider][INFO]2020-09-07 10:38:30,865: [200] (Browser 140063954064048, Page 140063955231504) https://www.sujetdebac.fr/
+[Spider][ERROR]2020-09-07 10:38:31,256: Error fetching page http://chocrasoreding.info: net::ERR_NAME_NOT_RESOLVED at http://chocrasoreding.info
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_NAME_NOT_RESOLVED at http://chocrasoreding.info
+[Spider][WARNING]2020-09-07 10:38:31,260: Browser (<pyppeteer.browser.Browser object at 0x7f632e3a52b0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 10:38:31,262: Retrying request to http://chocrasoreding.info. Retries remaining: 0
+[Spider][INFO]2020-09-07 10:38:32,078: [200] (Browser 140063954064048, Page 140063955234768) https://www.dieselpars.com/
+[Spider][INFO]2020-09-07 10:38:32,585: [200] (Browser 140063954064048, Page 140063955231504) http://nick20.com/
+[Spider][INFO]2020-09-07 10:38:35,368: [200] (Browser 140063934590928, Page 140063908839632) https://www.mobilegeeks.de/
+[Spider][INFO]2020-09-07 10:38:35,744: [200] (Browser 140063954064048, Page 140063955234768) https://www.arrosage-distribution.fr/
+[Spider][INFO]2020-09-07 10:38:37,505: [200] (Browser 140063954064048, Page 140063955234768) http://www.renoveringsfakta.se/
+[Spider][INFO]2020-09-07 10:38:37,930: [200] (Browser 140063934590928, Page 140063908839632) https://pinkpussy.tv/
+[Spider][INFO]2020-09-07 10:38:38,851: [200] (Browser 140063954064048, Page 140063955231504) https://futurecmo.org/
+[Spider][INFO]2020-09-07 10:38:41,132: [200] (Browser 140063954064048, Page 140063955234768) https://cursosdefotografiadigital.org/
+[Spider][INFO]2020-09-07 10:38:43,170: [200] (Browser 140063954064048, Page 140063955231504) https://speedofan98.tumblr.com/
+[Spider][INFO]2020-09-07 10:38:45,678: [200] (Browser 140063954064048, Page 140063955234768) http://www.batchile.com/
+[Spider][INFO]2020-09-07 10:38:46,937: [200] (Browser 140063954064048, Page 140063955231504) https://www.oyuntak.com/
+[Spider][INFO]2020-09-07 10:38:49,603: [200] (Browser 140063954064048, Page 140063955231504) http://ww12.yify-torrent-download.com/
+[Spider][ERROR]2020-09-07 10:38:49,882: Error fetching page http://becomefitter.com: net::ERR_NAME_NOT_RESOLVED at http://becomefitter.com
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_NAME_NOT_RESOLVED at http://becomefitter.com
+[Spider][WARNING]2020-09-07 10:38:49,883: Browser (<pyppeteer.browser.Browser object at 0x7f632e3a52b0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 10:38:49,883: Retrying request to http://becomefitter.com. Retries remaining: 0
+[Spider][INFO]2020-09-07 10:38:51,455: [200] (Browser 140063954064048, Page 140063955234768) https://www.bogaziciyonetim.istanbul/
+[Spider][INFO]2020-09-07 10:38:53,235: [200] (Browser 140063954064048, Page 140063955234768) https://freeexampapers.com/
+[Spider][INFO]2020-09-07 10:38:53,607: 
+{'Browser Replaces': 0,
+ 'Connections Closed': 0,
+ 'Exceptions': defaultdict(<class 'int'>,
+                           {"<class 'pyppeteer.errors.PageError'>": 6}),
+ 'Runtime': '0:02:04.363273',
+ 'Status Codes': defaultdict(<class 'int'>, {'200': 69, '404': 1}),
+ 'Total Requests': 70}
+
+[Spider][INFO]2020-09-07 10:38:55,153: [200] (Browser 140063934590928, Page 140063908839632) https://www.haodou.com/
+[Spider][INFO]2020-09-07 10:38:56,165: [200] (Browser 140063954064048, Page 140063955234768) https://www.linguee.jp/
+[Spider][INFO]2020-09-07 10:38:59,320: [523] (Browser 140063934590928, Page 140063908839632) https://aboutgaming777.com/
+[Spider][INFO]2020-09-07 10:43:28,755: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 10:43:29,046: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 10:43:29,328: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f632e3a52b0>
+[Spider][INFO]2020-09-07 10:43:29,328: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f632d112fd0>
+[Spider][INFO]2020-09-07 10:43:29,329: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f632e3a52b0>
+[Spider][INFO]2020-09-07 10:43:29,329: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f632d112fd0>
+[Spider][INFO]2020-09-07 10:43:29,335: Shutdown complete.
+[Spider][WARNING]2020-09-07 10:43:34,331: Could not properly close browser.
+[Spider][INFO]2020-09-07 10:43:34,333: Shutdown complete.
+[Spider][INFO]2020-09-07 11:11:50,903: Launching spider.
+[Spider][INFO]2020-09-07 11:11:51,464: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f1028146340>
+[Spider][INFO]2020-09-07 11:11:52,027: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f1026581070>
+[Spider][INFO]2020-09-07 11:12:06,560: [200] (Browser 139707368629056, Page 139707343045536) https://baby2baby.org/
+[Spider][INFO]2020-09-07 11:12:06,990: [200] (Browser 139707368629056, Page 139707343047648) https://www.fabbag.com/
+[Spider][INFO]2020-09-07 11:12:08,178: [200] (Browser 139707339509872, Page 139707339511792) http://www.bahargift.com/
+[Spider][INFO]2020-09-07 11:12:10,256: [404] (Browser 139707339509872, Page 139707339511792) https://infokomm.at/
+[Spider][INFO]2020-09-07 11:12:12,008: [200] (Browser 139707368629056, Page 139707343045536) https://linksvip.net/
+[Spider][INFO]2020-09-07 11:12:12,381: [200] (Browser 139707339509872, Page 139707339510112) https://www.claroshop.com/
+[Spider][INFO]2020-09-07 11:12:15,372: [200] (Browser 139707339509872, Page 139707339510112) https://ohkweb.com/
+[Spider][INFO]2020-09-07 11:12:16,993: [200] (Browser 139707339509872, Page 139707339511792) https://www.marinika.biz/
+[Spider][INFO]2020-09-07 11:12:19,197: [200] (Browser 139707368629056, Page 139707343045536) https://sat-tv.xyz/
+[Spider][INFO]2020-09-07 11:12:19,340: [200] (Browser 139707339509872, Page 139707339510112) https://admediapro.site/
+[Spider][INFO]2020-09-07 11:12:19,663: [200] (Browser 139707368629056, Page 139707343047648) http://nothi.gov.bd/login
+[Spider][INFO]2020-09-07 11:12:19,891: [200] (Browser 139707339509872, Page 139707339510112) http://inventwithscratch.com/
+[Spider][INFO]2020-09-07 11:12:21,914: [200] (Browser 139707339509872, Page 139707339510112) http://carolinaelitesc.com/
+[Spider][INFO]2020-09-07 11:12:24,517: [200] (Browser 139707368629056, Page 139707343045536) https://sayart.pl/
+[Spider][INFO]2020-09-07 11:12:24,739: [200] (Browser 139707368629056, Page 139707343047648) https://stalrzeszow.pl/
+[Spider][INFO]2020-09-07 11:12:24,845: [200] (Browser 139707339509872, Page 139707339510112) http://www.cinderella-girl.info/
+[Spider][INFO]2020-09-07 11:12:25,492: [200] (Browser 139707368629056, Page 139707343045536) http://labdigital.co.uk/
+[Spider][INFO]2020-09-07 11:12:26,234: [200] (Browser 139707339509872, Page 139707339510112) http://www.fivestarsautopawn.com/
+[Spider][INFO]2020-09-07 11:12:27,785: [200] (Browser 139707339509872, Page 139707339511792) https://www.cassendra-trans-argentine.com/
+[Spider][INFO]2020-09-07 11:12:29,071: [200] (Browser 139707368629056, Page 139707343045536) https://noe-theory.com/
+[Spider][INFO]2020-09-07 11:12:29,321: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 11:12:42,662: Cancelling 1 outstanding tasks.
+[Spider][INFO]2020-09-07 11:12:42,665: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f1028146340>
+[Spider][INFO]2020-09-07 11:12:42,665: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f1026581070>
+[Spider][INFO]2020-09-07 11:12:42,751: Shutdown complete.
+[Spider][ERROR]2020-09-07 11:13:10,915: Error fetching page http://understandingfaith.edu.au: Navigation Timeout Exceeded: 45000 ms exceeded.
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 887, in goto
+    raise error
+pyppeteer.errors.TimeoutError: Navigation Timeout Exceeded: 45000 ms exceeded.
+[Spider][WARNING]2020-09-07 11:13:10,917: Retrying request to http://understandingfaith.edu.au. Retries remaining: 0
+[Spider][INFO]2020-09-07 11:15:08,507: Launching spider.
+[Spider][INFO]2020-09-07 11:15:09,077: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 11:15:09,645: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 11:15:23,526: [200] (Browser 139671529284272, Page 139671542244448) https://swedenconnect.se/
+[Spider][INFO]2020-09-07 11:15:24,010: [200] (Browser 139671546023888, Page 139671566743344) https://honeybearsbbq.com/
+[Spider][INFO]2020-09-07 11:15:24,515: [200] (Browser 139671546023888, Page 139671566743008) https://homeoclass.ru/
+[Spider][INFO]2020-09-07 11:15:25,561: [200] (Browser 139671529284272, Page 139671542247376) https://www.longtablegrocery.com/
+[Spider][INFO]2020-09-07 11:15:28,155: [200] (Browser 139671546023888, Page 139671566743008) https://www.ascendify.com/
+[Spider][INFO]2020-09-07 11:15:29,605: [200] (Browser 139671546023888, Page 139671566743344) https://www.witt-weiden.de/
+[Spider][ERROR]2020-09-07 11:15:29,908: Error fetching page http://sendori.com: net::ERR_NAME_NOT_RESOLVED at http://sendori.com
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_NAME_NOT_RESOLVED at http://sendori.com
+[Spider][WARNING]2020-09-07 11:15:29,915: Browser (<pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 11:15:29,919: Retrying request to http://sendori.com. Retries remaining: 0
+[Spider][INFO]2020-09-07 11:15:31,290: [200] (Browser 139671529284272, Page 139671542244448) https://senior.hu/
+[Spider][INFO]2020-09-07 11:15:33,214: [200] (Browser 139671529284272, Page 139671542247376) https://yaoshe124.com/
+[Spider][INFO]2020-09-07 11:15:35,158: [200] (Browser 139671546023888, Page 139671566743008) http://www.bpp.pr.gov.br/Helena
+[Spider][INFO]2020-09-07 11:15:38,735: [200] (Browser 139671546023888, Page 139671566743008) https://shredsandpatches.tumblr.com/
+[Spider][INFO]2020-09-07 11:15:40,549: [200] (Browser 139671529284272, Page 139671542244448) https://www.xinz43.com/
+[Spider][INFO]2020-09-07 11:15:40,580: [200] (Browser 139671529284272, Page 139671542247376) https://gharardad.org/
+[Spider][INFO]2020-09-07 11:15:41,417: [403] (Browser 139671546023888, Page 139671566743008) https://citex.co.kr/
+[Spider][INFO]2020-09-07 11:15:41,550: [200] (Browser 139671546023888, Page 139671566743344) https://cpao.nic.in/
+[Spider][INFO]2020-09-07 11:15:43,395: [200] (Browser 139671529284272, Page 139671542244448) https://pcchip.su/
+[Spider][INFO]2020-09-07 11:15:43,597: [200] (Browser 139671546023888, Page 139671566743344) https://soundcorset.com/
+[Spider][INFO]2020-09-07 11:15:44,699: [200] (Browser 139671529284272, Page 139671542244448) https://new-vitara.ru/
+[Spider][INFO]2020-09-07 11:15:45,781: [200] (Browser 139671529284272, Page 139671542247376) http://moil.nic.in/
+[Spider][INFO]2020-09-07 11:15:47,106: [200] (Browser 139671529284272, Page 139671542244448) https://www.mibreit-photo.com/
+[Spider][INFO]2020-09-07 11:15:48,010: [200] (Browser 139671546023888, Page 139671566743344) http://kalagems.blogspot.com/
+[Spider][INFO]2020-09-07 11:15:48,981: [200] (Browser 139671529284272, Page 139671542247376) https://www.nicolemarie-photography.com/
+[Spider][INFO]2020-09-07 11:15:50,678: [200] (Browser 139671529284272, Page 139671542244448) https://www.satoshiquiz.com/
+[Spider][INFO]2020-09-07 11:15:51,601: [200] (Browser 139671529284272, Page 139671542247376) http://multicraft.org/
+[Spider][INFO]2020-09-07 11:15:54,281: [200] (Browser 139671546023888, Page 139671566743344) https://www.tce.ac.in/
+[Spider][INFO]2020-09-07 11:15:56,307: [200] (Browser 139671529284272, Page 139671542247376) https://futureofsex.net/
+[Spider][INFO]2020-09-07 11:15:57,754: [200] (Browser 139671529284272, Page 139671542247376) http://nexton-net.jp/
+[Spider][ERROR]2020-09-07 11:15:58,193: Error fetching page http://altadefinizione.sc: net::ERR_NAME_NOT_RESOLVED at http://altadefinizione.sc
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_NAME_NOT_RESOLVED at http://altadefinizione.sc
+[Spider][WARNING]2020-09-07 11:15:58,195: Browser (<pyppeteer.browser.Browser object at 0x7f07cfe362b0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 11:15:58,195: Retrying request to http://altadefinizione.sc. Retries remaining: 0
+[Spider][INFO]2020-09-07 11:16:00,118: [200] (Browser 139671529284272, Page 139671542247376) https://igirlgames.com/
+[Spider][INFO]2020-09-07 11:16:02,282: [200] (Browser 139671546023888, Page 139671566743344) https://americanmediainstitute.com/
+[Spider][INFO]2020-09-07 11:16:03,628: [403] (Browser 139671546023888, Page 139671566743344) https://lololoshkashop.net/
+[Spider][ERROR]2020-09-07 11:16:06,795: Error fetching page http://kayan54.ir: net::ERR_ABORTED at http://kayan54.ir
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_ABORTED at http://kayan54.ir
+[Spider][WARNING]2020-09-07 11:16:06,796: Browser (<pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 11:16:06,796: Retrying request to http://kayan54.ir. Retries remaining: 0
+[Spider][INFO]2020-09-07 11:16:07,905: [200] (Browser 139671529284272, Page 139671542247376) http://www.gloryholebar.com/
+[Spider][INFO]2020-09-07 11:16:08,413: [200] (Browser 139671546023888, Page 139671566743344) https://smartserials.com/
+[Spider][INFO]2020-09-07 11:16:09,715: [200] (Browser 139671529284272, Page 139671542247376) https://www.novica.com/
+[Spider][INFO]2020-09-07 11:16:10,997: [200] (Browser 139671546023888, Page 139671566743344) https://www.albrightknox.org/
+[Spider][INFO]2020-09-07 11:16:12,874: [200] (Browser 139671546023888, Page 139671566743344) http://q-w-e-r-t.com/
+[Spider][INFO]2020-09-07 11:16:13,256: [200] (Browser 139671529284272, Page 139671542247376) http://www.dobredladziecka.pl/
+[Spider][INFO]2020-09-07 11:16:13,634: 
+{'Browser Replaces': 0,
+ 'Connections Closed': 0,
+ 'Exceptions': defaultdict(<class 'int'>,
+                           {"<class 'pyppeteer.errors.PageError'>": 3}),
+ 'Runtime': '0:01:05.126647',
+ 'Status Codes': defaultdict(<class 'int'>, {'200': 33, '403': 2}),
+ 'Total Requests': 35}
+
+[Spider][INFO]2020-09-07 11:16:14,805: [200] (Browser 139671546023888, Page 139671566743344) http://etradeasia.com/
+[Spider][INFO]2020-09-07 11:17:27,490: Launching spider.
+[Spider][INFO]2020-09-07 11:17:28,094: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 11:17:28,702: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 11:17:44,187: [200] (Browser 139812333776848, Page 139812336756192) https://www.homemadexvideos.com/
+[Spider][INFO]2020-09-07 11:17:44,226: [200] (Browser 139812337353392, Page 139812333053024) https://theneighbornewspapers.com/
+[Spider][INFO]2020-09-07 11:17:44,360: [200] (Browser 139812337353392, Page 139812333055952) https://tactec.ru/
+[Spider][INFO]2020-09-07 11:17:45,318: [200] (Browser 139812333776848, Page 139812336758160) https://www.qlicket.com/
+[Spider][INFO]2020-09-07 11:17:47,718: [200] (Browser 139812337353392, Page 139812333055952) http://couteaux-et-tirebouchons.com/
+[Spider][INFO]2020-09-07 11:17:51,176: [200] (Browser 139812337353392, Page 139812333055952) https://rosenblumlaw.com/
+[Spider][INFO]2020-09-07 11:17:51,218: [200] (Browser 139812333776848, Page 139812336756192) https://glossopheritage.co.uk/
+[Spider][INFO]2020-09-07 11:21:43,323: Launching spider.
+[Spider][INFO]2020-09-07 11:21:43,928: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f6c842e6340>
+[Spider][INFO]2020-09-07 11:21:44,516: Finished initializing browser <pyppeteer.browser.Browser object at 0x7f6c8187e070>
+[Spider][INFO]2020-09-07 11:21:58,321: [200] (Browser 140104050828096, Page 140104032896528) https://koproskyla.com/
+[Spider][INFO]2020-09-07 11:21:58,999: [200] (Browser 140104050828096, Page 140104032896576) https://www.northampton.edu/
+[Spider][INFO]2020-09-07 11:21:59,793: [200] (Browser 140104006361200, Page 140104006362736) https://www.sugarelite.com//
+[Spider][INFO]2020-09-07 11:22:03,801: [200] (Browser 140104006361200, Page 140104006362736) https://www.n21portal.ru/
+[Spider][INFO]2020-09-07 11:22:06,474: [200] (Browser 140104050828096, Page 140104032896528) https://www.meramedas.com.tr/tr
+[Spider][INFO]2020-09-07 11:22:07,235: [200] (Browser 140104006361200, Page 140104006361440) https://xn--80aaadf9a6agjohr9n.xn--p1ai/
+[Spider][INFO]2020-09-07 11:22:11,132: [200] (Browser 140104050828096, Page 140104032896528) https://www.urbanwellnesspdx.com/
+[Spider][INFO]2020-09-07 11:22:12,788: [200] (Browser 140104006361200, Page 140104006361440) https://arcturius.org/
+[Spider][INFO]2020-09-07 11:22:16,550: [200] (Browser 140104050828096, Page 140104032896528) https://www.frontenacproperty.com/
+[Spider][INFO]2020-09-07 11:22:16,604: [200] (Browser 140104006361200, Page 140104006361440) https://gentlemenscloset.com/tour/
+[Spider][INFO]2020-09-07 11:22:20,662: [200] (Browser 140104006361200, Page 140104006361440) http://www.fahrschule-evelyne.ch/
+[Spider][ERROR]2020-09-07 11:22:20,969: Error fetching page http://star-sports.live: net::ERR_NAME_NOT_RESOLVED at http://star-sports.live
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.8/dist-packages/distbot-2.0.0-py3.8.egg/distbot/spider.py", line 89, in get
+    resp = await page.goto(url, **kwargs)
+  File "/usr/local/lib/python3.8/dist-packages/pyppeteer2-0.2.2-py3.8.egg/pyppeteer/page.py", line 881, in goto
+    raise PageError(result)
+pyppeteer.errors.PageError: net::ERR_NAME_NOT_RESOLVED at http://star-sports.live
+[Spider][WARNING]2020-09-07 11:22:20,976: Browser (<pyppeteer.browser.Browser object at 0x7f6c8187e070>) error recorded. (1 consecutive errors)
+[Spider][WARNING]2020-09-07 11:22:20,977: Retrying request to http://star-sports.live. Retries remaining: 0
+[Spider][INFO]2020-09-07 11:22:21,484: [200] (Browser 140104050828096, Page 140104032896528) https://alliancerxwp.com/
+[Spider][INFO]2020-09-07 11:22:25,723: [200] (Browser 140104006361200, Page 140104006361440) https://www.powertogas.info/startseite/
+[Spider][INFO]2020-09-07 11:22:28,773: [200] (Browser 140104006361200, Page 140104006362736) https://webstartup.net/
+[Spider][INFO]2020-09-07 11:22:29,970: [200] (Browser 140104050828096, Page 140104032896528) https://guruhi24.net/
+[Spider][INFO]2020-09-07 11:22:30,162: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 11:22:30,173: Shutting down...
+[Spider][INFO]2020-09-07 11:22:44,208: Cancelling 3 outstanding tasks.
+[Spider][INFO]2020-09-07 11:22:44,227: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f6c842e6340>
+[Spider][INFO]2020-09-07 11:22:44,228: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f6c8187e070>
+[Spider][INFO]2020-09-07 12:42:11,164: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:11,165: Shutting down...
+[Spider][INFO]2020-09-07 12:42:13,274: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:13,275: Shutting down...
+[Spider][INFO]2020-09-07 12:42:13,708: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:13,709: Shutting down...
+[Spider][INFO]2020-09-07 12:42:14,167: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:14,168: Shutting down...
+[Spider][INFO]2020-09-07 12:42:14,565: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:14,565: Shutting down...
+[Spider][INFO]2020-09-07 12:42:14,967: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:14,968: Shutting down...
+[Spider][INFO]2020-09-07 12:42:15,557: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:15,558: Shutting down...
+[Spider][INFO]2020-09-07 12:42:16,129: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:16,130: Shutting down...
+[Spider][INFO]2020-09-07 12:42:16,621: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:16,622: Shutting down...
+[Spider][INFO]2020-09-07 12:42:17,078: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:17,079: Shutting down...
+[Spider][INFO]2020-09-07 12:42:17,573: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:17,573: Shutting down...
+[Spider][INFO]2020-09-07 12:42:18,037: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:18,038: Shutting down...
+[Spider][INFO]2020-09-07 12:42:18,506: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:18,507: Shutting down...
+[Spider][INFO]2020-09-07 12:42:18,995: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:18,995: Shutting down...
+[Spider][INFO]2020-09-07 12:42:19,473: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:19,474: Shutting down...
+[Spider][INFO]2020-09-07 12:42:20,015: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:20,015: Shutting down...
+[Spider][INFO]2020-09-07 12:42:20,516: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:20,517: Shutting down...
+[Spider][INFO]2020-09-07 12:42:21,022: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:42:21,023: Shutting down...
+[Spider][INFO]2020-09-07 12:42:21,561: Caught signal: SIGHUP
+[Spider][INFO]2020-09-07 12:42:21,562: Shutting down...
+[Spider][INFO]2020-09-07 12:42:22,097: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,098: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,100: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,101: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,102: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,102: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,103: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,103: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,104: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,104: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,105: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,105: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,106: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,106: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,107: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,107: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,108: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,108: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,108: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,109: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,109: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,110: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,111: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,111: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,112: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,113: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,115: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,116: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,116: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,117: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,117: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,118: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,119: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,119: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,120: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,120: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,120: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f2898b402b0>
+[Spider][INFO]2020-09-07 12:42:22,121: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f28987d6fd0>
+[Spider][INFO]2020-09-07 12:42:22,136: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,136: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,137: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,137: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,138: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,138: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,139: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,139: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,140: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,140: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,141: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,142: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,142: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,143: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,143: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,144: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,145: Shutdown complete.
+[Spider][INFO]2020-09-07 12:42:22,146: Shutdown complete.
+[Spider][INFO]2020-09-07 12:45:22,347: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:45:22,348: Shutting down...
+[Spider][INFO]2020-09-07 12:45:23,149: Cancelling 8 outstanding tasks.
+[Spider][INFO]2020-09-07 12:45:23,150: Shutdown complete.
+[Spider][INFO]2020-09-07 12:45:51,855: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:45:52,385: Cancelling 65 outstanding tasks.
+[Spider][INFO]2020-09-07 12:45:52,387: Shutdown complete.
+[Spider][INFO]2020-09-07 12:46:10,494: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:46:10,495: Shutting down...
+[Spider][INFO]2020-09-07 12:46:10,742: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:46:10,742: Shutting down...
+[Spider][INFO]2020-09-07 12:46:10,992: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:46:10,992: Shutting down...
+[Spider][INFO]2020-09-07 12:46:11,241: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:46:11,241: Shutting down...
+[Spider][INFO]2020-09-07 12:46:11,491: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:46:11,492: Shutting down...
+[Spider][INFO]2020-09-07 12:46:11,736: Caught signal: SIGINT
+[Spider][INFO]2020-09-07 12:46:11,737: Shutting down...
+[Spider][INFO]2020-09-07 12:46:11,995: Caught signal: SIGHUP
+[Spider][INFO]2020-09-07 12:46:11,996: Shutting down...
+[Spider][INFO]2020-09-07 12:46:12,259: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 12:46:12,259: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 12:46:12,260: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 12:46:12,260: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 12:46:12,261: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 12:46:12,261: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 12:46:12,261: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 12:46:12,262: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 12:46:12,262: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 12:46:12,262: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 12:46:12,263: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 12:46:12,263: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 12:46:12,264: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07cfe362b0>
+[Spider][INFO]2020-09-07 12:46:12,264: Shutting down browser: <pyppeteer.browser.Browser object at 0x7f07d0e2cfd0>
+[Spider][INFO]2020-09-07 12:46:12,265: Shutdown complete.
+[Spider][INFO]2020-09-07 12:46:12,265: Shutdown complete.
+[Spider][INFO]2020-09-07 12:46:12,266: Shutdown complete.
+[Spider][INFO]2020-09-07 12:46:12,266: Shutdown complete.
+[Spider][INFO]2020-09-07 12:46:12,267: Shutdown complete.
+[Spider][INFO]2020-09-07 12:46:12,267: Shutdown complete.
+[Spider][WARNING]2020-09-07 12:46:17,263: Could not properly close browser.
+[Spider][WARNING]2020-09-07 12:46:17,264: Could not properly close browser.
+[Spider][INFO]2020-09-07 12:46:17,264: Shutdown complete.

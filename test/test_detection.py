@@ -1,5 +1,5 @@
-from pyppeteer_spider.spider import PyppeteerSpider
-from pyppeteer_spider.user_agents import linux_user_agents
+from distbot.spider import Spider
+from distbot.user_agents import linux_user_agents
 import pytest
 import pytest_asyncio
 
@@ -9,8 +9,8 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_user_agent():
-    spider = await PyppeteerSpider(user_agent_type="Linux",
-                                   headless=True).launch()
+    spider = await Spider(user_agent_type="Linux",
+                          headless=True).launch()
     page = await spider.get(test_url)
     user_agent = await page.evaluate('navigator.userAgent')
     assert (user_agent in linux_user_agents)
@@ -19,7 +19,7 @@ async def test_user_agent():
 
 
 async def test_webdriver_visible():
-    spider = await PyppeteerSpider(headless=True).launch()
+    spider = await Spider(headless=True).launch()
     page = await spider.get(test_url)
     webdriver = await page.evaluate('navigator.webdriver')
     assert (webdriver is None)
@@ -28,7 +28,7 @@ async def test_webdriver_visible():
 
 
 async def test_window_chome():
-    spider = await PyppeteerSpider(headless=True).launch()
+    spider = await Spider(headless=True).launch()
     page = await spider.get(test_url)
     window_chrome = await page.evaluate('window.chrome')
     assert (window_chrome is not None)
@@ -37,7 +37,7 @@ async def test_window_chome():
 
 
 async def test_navigator_permissions():
-    spider = await PyppeteerSpider(headless=True).launch()
+    spider = await Spider(headless=True).launch()
     page = await spider.get(test_url)
     permissions = await page.evaluate("""() => {
     const permissionStatus = navigator.permissions.query({ name: 'notifications' });
@@ -49,7 +49,7 @@ async def test_navigator_permissions():
 
 
 async def test_plugins():
-    spider = await PyppeteerSpider(headless=True).launch()
+    spider = await Spider(headless=True).launch()
     page = await spider.get(test_url)
     plugins = await page.evaluate('navigator.plugins.length')
     assert (plugins)
@@ -58,7 +58,7 @@ async def test_plugins():
 
 
 async def test_languages():
-    spider = await PyppeteerSpider(headless=True).launch()
+    spider = await Spider(headless=True).launch()
     page = await spider.get(test_url)
     languages = await page.evaluate('navigator.languages')
     assert (languages == ['en-US', 'en'])
@@ -67,7 +67,7 @@ async def test_languages():
 
 
 async def test_console_debug():
-    spider = await PyppeteerSpider(headless=True).launch()
+    spider = await Spider(headless=True).launch()
     page = await spider.get(test_url)
     console = await page.evaluate("() => console.debug('foo')")
     assert (console is None)

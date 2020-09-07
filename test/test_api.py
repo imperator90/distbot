@@ -1,4 +1,4 @@
-from pyppeteer_spider.spider import PyppeteerSpider
+from distbot.spider import Spider
 import pytest
 import pytest_asyncio
 import random
@@ -15,9 +15,9 @@ pytestmark = pytest.mark.asyncio
 @pytest.mark.parametrize('browsers', [1, 2, 5])
 @pytest.mark.parametrize('pages', [1, 2, 5])
 async def test_idle_page_queue(browsers, pages):
-    spider = await PyppeteerSpider(headless=True,
-                                   pages=pages,
-                                   browsers=browsers).launch()
+    spider = await Spider(headless=True,
+                          pages=pages,
+                          browsers=browsers).launch()
     # check that all pages from all browsers were added to the idle page queue.
     assert (spider.pm.idle_page_count == browsers * pages)
     _, page = await spider.pm.get_page()
@@ -34,9 +34,9 @@ async def test_idle_page_queue(browsers, pages):
 
 async def test_content_load_filter():
     no_load = ['image', 'font', 'stylesheet', 'script']
-    spider = await PyppeteerSpider(headless=True,
-                                   request_abort_types=no_load).launch()
-    page = await spider.get(test_url, waitUntil=['load','networkidle0'])
+    spider = await Spider(headless=True,
+                          request_abort_types=no_load).launch()
+    page = await spider.get(test_url, waitUntil=['load', 'networkidle0'])
     loaded_content = await page.evaluate(
         '() => JSON.stringify(performance.getEntries(), null, "  ")')
     loaded_content = json.loads(loaded_content)
@@ -51,7 +51,7 @@ async def test_content_load_filter():
 @pytest.mark.parametrize('browsers', [1, 2])
 @pytest.mark.parametrize('pages', [1, 2])
 async def test_page_iter(pages, browsers):
-    spider = await PyppeteerSpider(
+    spider = await Spider(
         headless=True,
         browsers=browsers,
         pages=pages).launch()
@@ -68,7 +68,7 @@ async def test_page_iter(pages, browsers):
 async def test_browser_replace():
     max_consec_browser_errors, browsers = 4, 3
     # make multiple rapid calls to replace the browser and check that it was only replaced one.
-    spider = await PyppeteerSpider(
+    spider = await Spider(
         headless=True,
         browsers=browsers,
         max_consec_browser_errors=max_consec_browser_errors).launch()
@@ -85,7 +85,7 @@ async def test_browser_replace():
 @pytest.mark.parametrize('browsers', [2, 4])
 @pytest.mark.parametrize('pages', [1, 2])
 async def test_browser_shutdown(pages, browsers):
-    spider = await PyppeteerSpider(
+    spider = await Spider(
         headless=True,
         browsers=browsers,
         pages=pages).launch()
@@ -94,5 +94,5 @@ async def test_browser_shutdown(pages, browsers):
     await spider.shutdown(browser)
     browsers_after = list(spider.bm.managed_browsers.keys())
     assert(browser not in browsers_after)
-    assert(len(browsers_after)==len(browsers)-1)
+    assert(len(browsers_after) == len(browsers)-1)
     await spider.shutdown()

@@ -2,17 +2,16 @@ import setuptools
 from pathlib import Path
 
 setuptools.setup(
-    name='pyppeteer_spider',
-    version='1.1.1',
+    name='distbot',
+    version='2.0.0',
     author='Dan Kelleher',
     author_email='danielkelleher@protonmail.com',
     maintainer='Dan Kelleher',
     maintainer_email='danielkelleher@protonmail.com',
     include_package_data=True,
-    description=
-    'A stealthy asynchronous (optionally distributed) spider running Chrome, Headless Chrome, Chromium, or Headless Chromium',
-    packages=['pyppeteer_spider'],
-    url='https://github.com/djkelleher/pyppeteer_spider',
+    description='Distributed (browser-based) web scraping in Python with automatic error handling and recovery and detection prevention.',
+    packages=['distbot'],
+    url='https://github.com/djkelleher/distbot',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
@@ -26,6 +25,7 @@ setuptools.setup(
         'Topic :: Scientific/Engineering :: Information Analysis'
     ],
     install_requires=[
-        'pyppeteer2'
+        'pyppeteer',
+        'matplotlib'
     ],
     test_requires=['pytest', 'pytest_asyncio'])
