@@ -47,8 +47,6 @@ class Spider(BrowserManager):
         # open browsers.
         for _ in range(self.cfg.get('browsers', 1)):
             await self.add_browser()
-        # monitor idle page queue.
-        asyncio.create_task(self.__check_queue_status())
         # return self so we can use one line construct+launch: await Spider().launch()
         return self
 
@@ -196,18 +194,6 @@ class Spider(BrowserManager):
         plt.savefig(
             str(self.log_dir.joinpath(
                 f"{__file__.split('.')[0].split('/')[-1]}_{str(self.start_time)}_response_times.png")))
-
-    async def __check_queue_status(self):
-        if self.idle_page_count == 0 and (datetime.now()-self.idle_page_last_seen).seconds > 4*60:
-            self.logger.error(
-                f'Idle page queue empty for over 4 minutes. Assuming page crash in end-user code. Restarting.')
-            # close all browsers.
-            await self.shutdown()
-            # open new browsers.
-            for _ in range(self.cfg.get('browsers', 1)):
-                await self.add_browser()
-        await asyncio.sleep(60)
-        await asyncio.create_task(self.__check_queue_status())
 
     async def shutdown(self, sig=None):
         if sig is not None:
