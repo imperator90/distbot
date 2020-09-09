@@ -16,7 +16,6 @@ from pathlib import Path
 from time import time
 import asyncio
 import signal
-import pickle
 import json
 
 
@@ -104,6 +103,8 @@ class Spider(BrowserManager):
                 self.logger.info(
                     f"\n{pformat(self.stats)}\n")
                 self.__save_stats()
+            elif self.stats['Total Requests'] % 100 == 0:
+                self.__save_plots()
             if response:
                 return resp, page
             return page
@@ -188,6 +189,8 @@ class Spider(BrowserManager):
     def __save_stats(self):
         self.log_dir.joinpath('stats.json').write_text(
             json.dumps(self.stats, indent=4))
+
+    def __save_plots(self):
         plt.plot(self.response_times, list(range(len(self.response_times))))
         plt.gcf().autofmt_xdate()
         plt.savefig(
