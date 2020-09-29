@@ -6,7 +6,7 @@ RUN apt-get update \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
     && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf \
-      python3.8 python3.8-dev python3-pip \
+      python3.8-dev python3-pip \
       --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
@@ -24,4 +24,6 @@ RUN apt-get update && \
       libxtst6 ca-certificates fonts-liberation libappindicator1 libnss3 lsb-release xdg-utils wget && \
     rm -rf /var/lib/apt/lists/*
 
-RUN pip3 install distbot
+COPY . /home/distbot
+WORKDIR /home/distbot
+RUN python3 setup.py install

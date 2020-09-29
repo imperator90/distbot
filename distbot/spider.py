@@ -145,14 +145,14 @@ class Spider:
             await self._browser_error(page.browser, True)
             # add the page back to idle page queue.
             await self.set_idle(page)
-        retries -= 1
-        if retries >= 0:
-            logger.warning(
-                f"Retrying request to {url}. Retries remaining: {retries}")
-            return await asyncio.create_task(
-                self.get(url, retries, response, **kwargs))
-        logger.error(
-            f"Max retries exceeded: {url}. URL can not be navigated.")
+            retries -= 1
+            if retries >= 0:
+                logger.warning(
+                    f"Retrying request to {url}. Retries remaining: {retries}")
+                return await asyncio.create_task(
+                    self.get(url, retries, response, **kwargs))
+            logger.error(
+                f"Max retries exceeded: {url}. URL can not be navigated.")
 
     async def set_idle(self, page: Page) -> None:
         """Add page to the idle queue."""
