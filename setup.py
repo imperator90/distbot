@@ -26,6 +26,7 @@ setuptools.setup(
     ],
     install_requires=[
         'pyppeteer',
-        'matplotlib'
+        'sanic',
+        'requests'
     ],
     test_requires=['pytest', 'pytest_asyncio'])

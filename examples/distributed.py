@@ -1,6 +1,6 @@
 from distbot.spider import Spider
 from datetime import datetime
-from random import shuffle
+from random import sample
 from pathlib import Path
 import asyncio
 import csv
@@ -12,9 +12,8 @@ def load_urls(url_count=100_000):
     print("Loading urls..")
     with Path("alexatop1m.csv").open(mode='r') as i:
         urls = ['http://'+r[1] for r in csv.reader(i)]
-    shuffle(urls)
     print(f"Returning {url_count} random urls.")
-    return urls[:url_count]
+    return sample(urls, url_count)
 
 
 async def fetch(url, spider):

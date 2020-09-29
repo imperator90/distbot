@@ -1,2 +1,3 @@
 pyppeteer
-matplotlib
+sanic
+requests
