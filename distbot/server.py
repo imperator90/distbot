@@ -1,7 +1,24 @@
 from sanic import Sanic, response
-from pprint import pformat
 import pyppeteer.launcher
+
+from pprint import pformat
+import argparse
 import logging
+
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-a',
+                        '--address',
+                        type=str,
+                        default='0.0.0.0',
+                        help='Address to run the server on.')
+    parser.add_argument('-p',
+                        '--port',
+                        type=int,
+                        default='80',
+                        help='Port to run the server on.')
+    return parser.parse_args()
 
 
 app = Sanic("Browser Server")
@@ -21,4 +38,5 @@ async def new_browser(request):
 
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=80, debug=True)
+    args = parse_args()
+    app.run(host=args.address, port=args.port, debug=True)
