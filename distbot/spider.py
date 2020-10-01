@@ -23,10 +23,9 @@ import signal
 import pickle
 import json
 
-
-log_dir = Path('distbot_logs')
+log_level, log_dir = logging.INFO, Path('distbot_logs')
 logger = utils.get_logger(
-    "Spider", log_save_path=log_dir.joinpath('spider.log'))
+    "Spider", log_save_path=log_dir.joinpath('spider.log'), log_level=log_level)
 
 
 class Spider:
@@ -34,10 +33,8 @@ class Spider:
 
     def __init__(self):
         # runtime storage containers.
-        self.launch_options: Dict[Browser, Dict[str, Any]] = {}
-        self.browser_stats: Dict[Browser, Dict[str, Any]] = {}
-        self.browser_locks: Dict[Browser: Lock] = {}
-        self.page_stats: Dict[Page, Dict[str, Any]] = {}
+        self.browsers: Dict[Browser, Any] = {}
+        self.pages: Dict[Page, Any] = {}
         self.idle_page_q = asyncio.Queue()
         # use user agents that match current platform.
         self.user_agents = user_agents.get(
@@ -49,8 +46,6 @@ class Spider:
             loop.add_signal_handler(
                 s, lambda s=s: asyncio.create_task(self.shutdown(s)))
         self.start_time = datetime.now()
-        # periodically save stats.
-        asyncio.create_task(self._periodic_stats_save())
 
     @staticmethod
     async def scroll(page: Page):
@@ -61,7 +56,7 @@ class Spider:
         return await utils.hover(page, ele_xpath)
 
     async def add_browser(self, pages: int = 1,
-                          remote_server_addr: str = None,
+                          server: str = None,
                           launch_options: Dict[str, Any] = {}) -> Browser:
         """Launch a new browser."""
         # check if screenshot directory needs to be created.
@@ -71,104 +66,107 @@ class Spider:
                 f"screenshots_{self.start_time.strftime('%Y-%m-%d_%H:%M:%S')}")
             self.screenshot_dir.mkdir()
         # launch browser on server if server address is provided.
-        if remote_server_addr:
+        if server:
             logger.info(
-                f"""Launching remote browser on {remote_server_addr}:
+                f"""Launching remote browser on {server}:
                     {pformat(launch_options)}""")
-            browser = await self._launch_remote_browser(remote_server_addr, launch_options)
+            browser = await self._launch_remote_browser(server, launch_options)
         else:
             # start a local browser.
             logger.info(
                 f"""Launching local browser:
                     {pformat(launch_options)}""")
             browser = await pyppeteer.launcher.launch(launch_options)
-        # save browser launch arguments.
-        self.launch_options[browser] = launch_options
-        # Add callback that will be called in case of disconnection with Chrome Dev Tools.
+        # save browser data.
+        self.browsers[browser] = {
+            'id': str(uuid4()),
+            'page_count': pages,
+            'launch_options': launch_options,
+            'server': server,
+            'consec_errors': 0,
+            'lock': Lock()
+        }
+        # add callback that will be called in case of disconnection with Chrome Dev Tools.
         browser._connection.setClosedCallback(
             self.__on_connection_close)
-        browser_id = str(uuid4())
-        self.browser_stats[browser] = {
-            'id': browser_id,
-            'remote_server_addr': remote_server_addr,
-            'start_time': datetime.now(),
-            'consec_errors': 0
-        }
         # add pages (tabs) to the new browser.
         # a new browser has 1 page by default, so add 1 less than desired page count.
         for _ in range(pages-1):
             await browser.newPage()
         for page in await browser.pages():
-            # add custom settings to page.
-            await self._add_page_settings(page)
-            # initialize logging metadata.
-            self.page_stats[page] = {
-                'id': str(uuid4()),
-                'browser_id': browser_id,
-                'start_time': datetime.now(),
-                'time_last_idle': datetime.now(),
-                'responses': [],
-                'exceptions': defaultdict(int)
-            }
-            # Add page to idle queue.
-            await self.set_idle(page)
-            # start task to periodically check page idle status.
-            asyncio.create_task(self._check_idle_status(page))
+            await self._init_page(page)
 
     async def get(self, url, retries=2, response=False, **kwargs):
         """Navigate next idle page to url."""
         # get next page from idle queue.
         page = await self._get_idle_page()
-        try:
+        browser_data = self.browsers[page.browser]
+
+        async def try_get(url, **kwargs):
             # add cookies to request if user provided cookies.
             if 'cookies' in kwargs:
-                await self._set_cookies(page, kwargs.pop('cookies'))
+                cookies = kwargs.pop('cookies')
+                if isinstance(cookies, dict):
+                    await page.setCookie(cookies)
+                elif isinstance(cookies, (list, tuple, set)):
+                    await asyncio.gather(
+                        *[page.setCookie(cookie) for cookie in cookies])
             # all kwargs besides 'cookies' should be for goto
             resp = await page.goto(url, **kwargs)
-            status = resp.status if resp else None
-            logger.info(f"[{status}] {page.url}")
-            self.page_stats[page]['responses'].append(
-                (status, datetime.now()))
             # record that page was navigated with no error.
             await self._browser_error(page.browser, False)
-            if self.launch_options[page.browser].get('screenshot', False):
+            if browser_data['launch_options'].get('screenshot', False):
                 # save screenshot of page.
                 await self._take_screenshot(page)
+            return resp
+        try:
+            resp = await asyncio.wait_for(
+                try_get(url, **kwargs),
+                # Pyppeteer timout and defaultNavigationTimeout are in milliseconds, but wait_for needs seconds.
+                timeout=kwargs.get('timeout',
+                                   browser_data['launch_options'].get('defaultNavigationTimeout', 30_000)) * 1.5 / 1_000)
+            status = resp.status if resp else None
+            if log_level == logging.DEBUG:
+                logger.info(
+                    f"[{status}] {page.url} (server: {browser_data['server']}, browser: {browser_data['id']}, page: {self.pages[page]['id']}")
+            else:
+                logger.info(f"[{status}] {page.url}")
             if response:
                 return resp, page
             return page
+        except asyncio.TimeoutError:
+            logger.warning(f"Detected error with browser {page.browser}.")
+            await self._replace_browser(page.browser)
         except Exception as e:
             logger.exception(
                 f"Error fetching page {url}: {e}")
-            self.page_stats[page]['exceptions'][str(type(e))] += 1
             # record that there was an error while navigating page.
             await self._browser_error(page.browser, True)
             # add the page back to idle page queue.
             await self.set_idle(page)
-            retries -= 1
-            if retries >= 0:
-                logger.warning(
-                    f"Retrying request to {url}. Retries remaining: {retries}")
-                return await asyncio.create_task(
-                    self.get(url, retries, response, **kwargs))
-            logger.error(
-                f"Max retries exceeded: {url}. URL can not be navigated.")
+        retries -= 1
+        if retries >= 0:
+            logger.warning(
+                f"Retrying request to {url}. Retries remaining: {retries}")
+            return await asyncio.create_task(
+                self.get(url, retries, response, **kwargs))
+        logger.error(
+            f"Max retries exceeded: {url}. URL can not be navigated.")
 
     async def set_idle(self, page: Page) -> None:
         """Add page to the idle queue."""
-        # mark the time this page was set idle.
-        self.page_stats[page]['time_last_idle'] = datetime.now()
-        # add page to queue.
-        if page not in self.idle_page_q._queue:
+        # check that page has not been closed and page is not already idle.
+        if page in self.pages and page not in self.idle_page_q._queue:
+            # add page to queue.
             await self.idle_page_q.put(page)
+            # mark that page is idle.
+            self.pages[page]['is_idle'] = True
 
     async def shutdown(self, sig=None) -> None:
         """Shutdown all browsers."""
         if sig is not None:
             logger.info(f"Caught signal: {sig.name}")
         logger.info("Shutting down...")
-        # save final stats.
-        await self._save_stats()
         # cancel all of Spider's tasks.
         tasks = []
         for t in asyncio.all_tasks():
@@ -178,7 +176,7 @@ class Spider:
         logger.info(f"Cancelling {len(tasks)} outstanding tasks.")
         await asyncio.gather(*tasks, return_exceptions=True)
         # close all browsers on all servers.
-        await asyncio.gather(*[asyncio.create_task(self._shutdown_browser(browser)) for browser in set(self.browser_locks.keys())])
+        await asyncio.gather(*[asyncio.create_task(self._shutdown_browser(b)) for b in set(self.browsers.keys())])
 
     async def _launch_remote_browser(self, server_ip,
                                      launch_options: Dict[str, Any] = None):
@@ -198,28 +196,46 @@ class Spider:
         # connect to new browser's DevTools endpoint.
         return await pyppeteer.launcher.connect(browserWSEndpoint=dev_tools_endpoint)
 
+    async def _init_page(self, page):
+        # initialize page data.
+        self.pages[page] = {
+            'id': str(uuid4()),
+            'is_idle': False
+        }
+        # add custom settings to page.
+        await self._add_page_settings(page)
+        # add page to idle queue.
+        await self.set_idle(page)
+        # start task to periodically check page idle status.
+        asyncio.create_task(self._check_idle_status(page))
+
     async def _get_idle_page(self) -> Page:
         """Get next page from the idle queue and check if the browser this page belongs to has crashed."""
         # block until a page is available.
         page = await self.idle_page_q.get()
         # mark time that we've seen page is idle.
-        self.page_stats[page]['time_last_idle'] = datetime.now()
+        self.pages[page]['is_idle'] = False
+        self.pages[page]['time_last_idle'] = datetime.now()
         # closed pages should not be in queue.
         if page.isClosed():
+            logger.warning(
+                f"Found closed page in idle queue. Replacing page {page}")
             # launch new page to replace closed page.
             page = await page.browser.newPage()
-            await self._add_page_settings(page)
+            asyncio.create_task(self._init_page(page))
+            return await self._get_idle_page()
         try:
             # wait for page to set a random custom user-agent string.
             await asyncio.wait_for(page.setUserAgent(
                 random.choice(self.user_agents)), timeout=3)
-            if self.launch_options[page.browser].get('deleteCookies', False):
+            if self.browsers[page.browser]['launch_options'].get('deleteCookies', False):
                 # wait for page to clear cookies.
                 await asyncio.wait_for(
                     page._client.send('Network.clearBrowserCookies'), timeout=3)
-        except (asyncio.TimeoutError, pyppeteer.errors.NetworkError):
+        except (asyncio.TimeoutError, pyppeteer.errors.NetworkError) as e:
             # all page functions will hang and time out if browser has crashed.
             # replace crashed browser.
+            logger.warning(f"Detected error with browser {page.browser}: {e}")
             await self._replace_browser(page.browser)
             # try again
             return await self._get_idle_page()
@@ -231,21 +247,23 @@ class Spider:
         tasks = [page.evaluateOnNewDocument(
             f"() => {{{Path(__file__).parent.joinpath('stealth.min.js').read_text()}}}")]
         # launch options for this page.
-        cfg = self.launch_options[page.browser]
+        launch_options = self.browsers[page.browser]['launch_options']
         # Set the default maximum navigation time.
-        if 'defaultNavigationTimeout' in cfg:
-            page.setDefaultNavigationTimeout(cfg['defaultNavigationTimeout'])
+        if 'defaultNavigationTimeout' in launch_options:
+            page.setDefaultNavigationTimeout(
+                launch_options['defaultNavigationTimeout'])
         # Blocks URLs from loading.
-        if 'blockedURLs' in cfg:
-            await page._client.send('Network.setBlockedURLs', {'urls': cfg['blockedURLs']})
+        if 'blockedURLs' in launch_options:
+            await page._client.send('Network.setBlockedURLs', {'urls': launch_options['blockedURLs']})
         # Disable cache for each request.
-        if 'setCacheEnabled' in cfg:
-            tasks.append(page.setCacheEnabled(cfg['setCacheEnabled']))
+        if 'setCacheEnabled' in launch_options:
+            tasks.append(page.setCacheEnabled(
+                launch_options['setCacheEnabled']))
         # Add a JavaScript function(s) that will be invoked whenever the page is navigated.
-        for script in cfg.get('evaluateOnNewDocument', []):
+        for script in launch_options.get('evaluateOnNewDocument', []):
             tasks.append(page.evaluateOnNewDocument(script))
         # Intercept all request and only allow requests for types not in request_abort_types.
-        request_abort_types = cfg.get('requestAbortTypes')
+        request_abort_types = launch_options.get('requestAbortTypes')
         if request_abort_types:
             tasks.append(page.setRequestInterception(True))
 
@@ -260,37 +278,35 @@ class Spider:
         await asyncio.gather(*tasks)
 
     async def _check_idle_status(self, page) -> None:
-        if page in self.page_stats:
-            t_since_idle = datetime.now(
-            )-self.page_stats[page]['time_last_idle']
-            if t_since_idle.seconds >= self.launch_options[page.browser].get('pageIdleTimeout', 60*5):
-                logger.error(
-                    f"""Page {self.page_stats[page]['id']} has not been set idle in {str(t_since_idle)}.
-                        Assuming client side crash. Adding page to idle queue.""")
-                await self.set_idle(page)
+        page_data = self.pages.get(page)
+        # check that page has not been removed.
+        if page_data is not None:
+            # if page is not idle, check how long it has not been idle.
+            if not page_data['is_idle']:
+                t_since_idle = datetime.now() - page_data['time_last_idle']
+                idle_timeout = self.browsers[page.browser]['launch_options'].get(
+                    'pageIdleTimeout', 60*5)
+                if t_since_idle.seconds >= idle_timeout:
+                    logger.error(
+                        f"""Page {self.pages[page]['id']} has not been set idle in {str(t_since_idle)}.
+                            Assuming client side crash. Adding page to idle queue.""")
+                    # set page idle so a functioning client side task can use it.
+                    await self.set_idle(page)
+            # check page's idle status again in about another minute.
             await asyncio.sleep(60)
             asyncio.create_task(self._check_idle_status(page))
-
-    async def _set_cookies(self, page: Page,
-                           cookies: Union[Dict[str, str], List[Dict[str, str]]]) -> None:
-        if isinstance(cookies, dict):
-            await page.setCookie(cookies)
-        elif isinstance(cookies, (list, tuple, set)):
-            await asyncio.gather(
-                *[page.setCookie(cookie) for cookie in cookies])
-        else:
-            raise ValueError(
-                "Argument for 'cookies' should be a dict or (list|tuple|set) of dicts."
-            )
 
     async def _replace_browser(self, browser: Browser) -> None:
         """Close browser and launch a new one."""
         # check if this browser has already been replaced.
-        lock = self.browser_locks.get(browser)
-        if lock is None:
+        if browser not in self.browsers:
+            logger.debug(f'Browser {browser} has already been replaced.')
             return
+        lock = self.browsers[browser]['lock']
         # check if another task is currently replacing this browser.
         if lock.locked():
+            logger.debug(
+                f'Waiting for browser {browser} replacement to finish.')
             # wait for new browser launch to finish.
             while lock.locked():
                 await asyncio.sleep(0.5)
@@ -299,53 +315,41 @@ class Spider:
         # lock this browser so other tasks can not create replacement browsers for this browser.
         async with lock:
             logger.info(f"Replacing browser: {browser}.")
-            server = self.browser_stats[browser]['remote_server']
+            browser_data = self.browsers[browser]
             # close the old browser.
             await self._shutdown_browser(browser)
             # add a new browser.
-            await self.add_browser(server)
+            await self.add_browser(pages=browser_data['page_count'],
+                                   server=browser_data['server'],
+                                   launch_options=browser_data['launch_options'])
         logger.info(f"Browser {browser} replacement complete.")
 
     async def _browser_error(self, browser: Browser, error: bool) -> None:
         # Don't record error for a browser that has already been replaced or is currently being replaced.
-        if browser in self.browser_locks and not self.browser_locks[browser].locked():
+        if browser in self.browsers and not self.browsers[browser]['lock'].locked():
             if error:
-                self.browser_stats[browser]['consec_errors'] += 1
-                if self.browser_stats[browser]['consec_errors'] > self.launch_options[browser].get('maxConsecutiveError', 4):
+                self.browsers[browser]['consec_errors'] += 1
+                if self.browsers[browser]['consec_errors'] > self.browsers[browser]['launch_options'].get('maxConsecutiveError', 4):
                     await self._replace_browser(browser)
             else:
-                self.browser_stats[browser]['consec_errors'] = 0
+                self.browsers[browser]['consec_errors'] = 0
 
     async def _close_page(self, page: Page) -> None:
         logger.info(f"Removing page: {page}")
         if page in self.idle_page_q._queue:
             # remove page from idle queue.
             self.idle_page_q._queue.remove(page)
-        if page in self.page_stats:
-            # save page stats histroy.
-            page_stats, now = self.page_stats.pop(page), datetime.now()
-            page_stats['start_time'] = str(page_stats['start_time'])
-            page_stats['close_time'] = str(now)
-            page_stats['runtime'] = str(now - page_stats['start_time'])
-            page_stats['time_last_idle'] = str(page_stats['time_last_idle'])
-            # log page stats to history file.
-            with log_dir.joinpath('page_history.txt').open(mode='a+') as o:
-                o.write(f'{json.dumps(page_stats)}\n')
-            try:
-                # wait for page to close.
-                await asyncio.wait_for(page.close(), timeout=2)
-            except asyncio.TimeoutError:
-                logger.warning(
-                    f"Page {page} could not be properly closed.")
+        del self.pages[page]
+        try:
+            # wait for page to close.
+            await asyncio.wait_for(page.close(), timeout=2)
+        except asyncio.TimeoutError:
+            logger.warning(
+                f"Page {page} could not be properly closed.")
 
     async def _shutdown_browser(self, browser: Browser) -> None:
         """Close browser and remove all references."""
         logger.info(f"Shutting down browser: {browser}")
-        # save browser history log to file.
-        browser_stats, now = self.browser_stats.pop(browser), datetime.now()
-        browser_stats['start_time'] = str(browser_stats['start_time'])
-        browser_stats['close_time'] = str(now)
-        browser_stats['runtime'] = str(now - browser_stats['start_time'])
         # remove all pages from the browser.
         for page in await browser.pages():
             await self._close_page(page)
@@ -354,11 +358,10 @@ class Spider:
             await asyncio.wait_for(browser.close(), timeout=2)
         except asyncio.TimeoutError:
             logger.warning(f"Could not properly close browser: {browser}")
-        del self.browser_locks[browser]
-        del self.launch_options[browser]
+        del self.browsers[browser]
 
     async def _take_screenshot(self, page):
-        page_id = self.page_stats[page]['id']
+        page_id = self.pages[page]['id']
         # remove this page's old screenshot.
         for f in self.screenshot_dir.glob(f'*{page_id}.jpeg'):
             f.unlink()
@@ -366,21 +369,11 @@ class Spider:
         await page.screenshot(path=str(self.screenshot_dir.joinpath(
             f"{datetime.now().strftime('%Y-%m-%d_%H:%M:%S')}_{page}.jpeg")), quality=0)
 
-    async def _save_stats(self):
-        log_dir.joinpath('active_browsers.pickle').write_bytes(
-            pickle.dumps(list(self.browser_stats.values())))
-        log_dir.joinpath('active_pages.pickle').write_bytes(
-            pickle.dumps(list(self.page_stats.values())))
-
-    async def _periodic_stats_save(self):
-        await self._save_stats()
-        await asyncio.sleep(5)
-        asyncio.create_task(self._periodic_stats_save())
-
     def __on_connection_close(self) -> None:
         """Find browser with closed websocket connection and replace it."""
         logger.info("Checking closed connections.")
-        for browser in set(self.browser_locks.keys()):
+        for browser in set(self.browsers.keys()):
             if browser._connection.connection is None or not browser._connection.connection.open:
+                logger.warning(f"Found closed connection: {browser}")
                 asyncio.create_task(
                     self._replace_browser(browser))

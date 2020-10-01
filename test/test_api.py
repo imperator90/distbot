@@ -17,7 +17,7 @@ pytestmark = pytest.mark.asyncio
 async def test_idle_page_queue(browsers, pages):
     spider = await Spider(headless=True,
                           pages=pages,
-                          browsers=browsers).launch()
+                          browsers=browsers)
     # check that all pages from all browsers were added to the idle page queue.
     assert (spider.pm.idle_page_count == browsers * pages)
     _, page = await spider.pm.get_page()

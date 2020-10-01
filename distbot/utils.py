@@ -84,7 +84,6 @@ def get_logger(logger_name: str, log_save_path: Optional[Union[str, Path]] = Non
                     f"Error creating log directory '{log_save_path.parent}'. No log will be saved. Error: {e}"
                 )
                 return logger
-        logger.info(f"Saving log file to '{str(log_save_path)}'")
         fh = logging.handlers.RotatingFileHandler(log_save_path,
                                                   maxBytes=10_000_000,
                                                   backupCount=2)
