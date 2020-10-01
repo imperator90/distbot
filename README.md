@@ -4,6 +4,8 @@ Based off of [Pyppeteer](https://github.com/pyppeteer/pyppeteer).
 
 ## Installing   
 `pip install distbot`   
+or   
+`docker pull danielkelleher/distbot`   
 
 ## Usage   
 Spiders can be ran with multiple browsers and/or multiple browser tabs.   
