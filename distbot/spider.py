@@ -243,26 +243,26 @@ class Spider:
 
     async def _add_page_settings(self, page: Page) -> None:
         """Add custom settings to a page."""
-        # Add JavaScript functions to prevent automation detection.
+        # add JavaScript functions to prevent automation detection.
         tasks = [page.evaluateOnNewDocument(
             f"() => {{{Path(__file__).parent.joinpath('stealth.min.js').read_text()}}}")]
         # launch options for this page.
         launch_options = self.browsers[page.browser]['launch_options']
-        # Set the default maximum navigation time.
+        # set the default maximum navigation time.
         if 'defaultNavigationTimeout' in launch_options:
             page.setDefaultNavigationTimeout(
                 launch_options['defaultNavigationTimeout'])
-        # Blocks URLs from loading.
+        # blocks URLs from loading.
         if 'blockedURLs' in launch_options:
             await page._client.send('Network.setBlockedURLs', {'urls': launch_options['blockedURLs']})
-        # Disable cache for each request.
+        # disable cache for each request.
         if 'setCacheEnabled' in launch_options:
             tasks.append(page.setCacheEnabled(
                 launch_options['setCacheEnabled']))
-        # Add a JavaScript function(s) that will be invoked whenever the page is navigated.
+        # add a JavaScript function(s) that will be invoked whenever the page is navigated.
         for script in launch_options.get('evaluateOnNewDocument', []):
             tasks.append(page.evaluateOnNewDocument(script))
-        # Intercept all request and only allow requests for types not in request_abort_types.
+        # intercept all request and only allow requests for types not in request_abort_types.
         request_abort_types = launch_options.get('requestAbortTypes')
         if request_abort_types:
             tasks.append(page.setRequestInterception(True))
