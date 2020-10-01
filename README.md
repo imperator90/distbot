@@ -5,7 +5,7 @@ Based off of [Pyppeteer](https://github.com/pyppeteer/pyppeteer).
 ## Installing   
 *With pip*   
 `pip install distbot`   
-*with Docker:*   
+*With Docker:*   
 `docker pull danielkelleher/distbot`   
 
 ## Usage   
@@ -17,7 +17,8 @@ For non-distributed use, see [examples/simple.py](./examples/simple.py)
 
 ## Launch Options   
 distbot supports all of Pyppeteer's [launch options](https://pyppeteer.github.io/pyppeteer/reference.html#launcher), plus a few others:   
-**screenshot**
+
+**screenshot**   
 screenshot each page that is navigated.   
 *default: False*   
 
