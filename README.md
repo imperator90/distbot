@@ -3,9 +3,9 @@ Distributed (browser-based) web scraping in Python with automatic error handling
 Based off of [Pyppeteer](https://github.com/pyppeteer/pyppeteer).   
 
 ## Installing   
-*pip:*   
+pip:   
 `pip install distbot`   
-*Docker:*   
+Docker:   
 `docker pull danielkelleher/distbot`   
 
 ## Usage   
