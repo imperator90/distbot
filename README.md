@@ -4,7 +4,7 @@ Based off of [Pyppeteer](https://github.com/pyppeteer/pyppeteer).
 
 ## Installing   
 `pip install distbot`   
-or   
+ *or*   
 `docker pull danielkelleher/distbot`   
 
 ## Usage   
