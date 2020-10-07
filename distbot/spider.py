@@ -49,10 +49,12 @@ class Spider:
 
     @staticmethod
     async def scroll(page: Page):
+        """scroll to the bottom of page."""
         return await utils.scroll(page)
 
     @staticmethod
     async def hover(page: Page, ele_xpath: str):
+        """hover all elements at path {ele_xpath}."""
         return await utils.hover(page, ele_xpath)
 
     async def add_browser(self, pages: int = 1,
