@@ -27,5 +27,7 @@ RUN apt-get update && \
 COPY . /home/distbot
 WORKDIR /home/distbot
 
-RUN python3 scripts/download_chromium.py
 RUN python3 setup.py install
+RUN python3 scripts/download_chromium.py
+
+CMD ["python3","distbot/server.py"]
