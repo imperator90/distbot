@@ -23,7 +23,7 @@ import signal
 import pickle
 import json
 
-log_level, log_dir = logging.INFO, Path('distbot_logs')
+log_level, log_dir = logging.DEBUG, Path('distbot_logs')
 logger = utils.get_logger(
     "Spider", log_save_path=log_dir.joinpath('spider.log'), log_level=log_level)
 
