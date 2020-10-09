@@ -1,5 +1,5 @@
-from distbot import utils
 from distbot.media import user_agents
+from distbot.utils import security_check, get_logger
 
 from pyppeteer.browser import Browser
 from pyppeteer.page import Page
@@ -9,12 +9,13 @@ import pyppeteer.errors
 import requests
 
 from typing import Dict, List, Union, Any
-from collections import defaultdict
+from collections import defaultdict, deque
 from asyncio.locks import Lock
 from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 from uuid import uuid4
+from enum import Enum
 import platform
 import logging
 import asyncio
@@ -23,9 +24,16 @@ import signal
 import pickle
 import json
 
-log_level, log_dir = logging.DEBUG, Path('distbot_logs')
-logger = utils.get_logger(
+log_level = logging.DEBUG
+log_dir = Path('distbot_logs')
+logger = get_logger(
     "Spider", log_save_path=log_dir.joinpath('spider.log'), log_level=log_level)
+
+
+class Error(Enum):
+    NONE = 0
+    SECURITY = 1
+    OTHER = 2
 
 
 class Spider:
@@ -47,20 +55,33 @@ class Spider:
                 s, lambda s=s: asyncio.create_task(self.shutdown(s)))
         self.start_time = datetime.now()
 
-    @staticmethod
-    async def scroll(page: Page):
-        """scroll to the bottom of page."""
-        return await utils.scroll(page)
-
-    @staticmethod
-    async def hover(page: Page, ele_xpath: str):
-        """hover all elements at path {ele_xpath}."""
-        return await utils.hover(page, ele_xpath)
-
     async def add_browser(self, pages: int = 1,
                           server: str = None,
                           launch_options: Dict[str, Any] = {}) -> Browser:
         """Launch a new browser."""
+        browser_data = {
+            'page_count': pages,
+            'launch_options': launch_options,
+            'server': server,
+            'consec_errors': 0,
+            'lock': Lock(),
+            'id': str(uuid4())
+        }
+        # security_error_frac_proxy_switch is fraction of request history that is security errors.
+        # type should be tuple of two elements (max_security_error_count, request_history_buffer_size)
+        max_sec_err_frac = launch_options.get(
+            'security_error_frac_proxy_switch')
+        if max_sec_err_frac:
+            browser_data['security_check_history'] = deque(
+                maxlen=max_sec_err_frac[1])
+        elif 'proxy' in launch_options:
+            # start browser using proxy server.
+            if 'args' not in launch_options:
+                launch_options['args'] = []
+            # add proxy server to launch options if it has not already been added.
+            if not any('--proxy-server' in arg for arg in launch_options['args']):
+                launch_options['args'].append(
+                    f'--proxy-server="{launch_options["proxy"]}"')
         # check if screenshot directory needs to be created.
         if launch_options.get('screenshot', False) and self.screenshot_dir is None:
             # create screenshot directory for this run.
@@ -80,14 +101,7 @@ class Spider:
                     {pformat(launch_options)}""")
             browser = await pyppeteer.launcher.launch(launch_options)
         # save browser data.
-        self.browsers[browser] = {
-            'id': str(uuid4()),
-            'page_count': pages,
-            'launch_options': launch_options,
-            'server': server,
-            'consec_errors': 0,
-            'lock': Lock()
-        }
+        self.browsers[browser] = browser_data
         # add callback that will be called in case of disconnection with Chrome Dev Tools.
         browser._connection.setClosedCallback(
             self.__on_connection_close)
@@ -115,35 +129,40 @@ class Spider:
                         *[page.setCookie(cookie) for cookie in cookies])
             # all kwargs besides 'cookies' should be for goto
             resp = await page.goto(url, **kwargs)
-            # record that page was navigated with no error.
-            await self._browser_error(page.browser, False)
             if browser_data['launch_options'].get('screenshot', False):
                 # save screenshot of page.
                 await self._take_screenshot(page)
-            return resp
+            return resp, await security_check(page, resp)
         try:
-            resp = await asyncio.wait_for(
+            resp, sc_level = await asyncio.wait_for(
                 try_get(url, **kwargs),
                 # Pyppeteer timout and defaultNavigationTimeout are in milliseconds, but wait_for needs seconds.
                 timeout=kwargs.get('timeout',
                                    browser_data['launch_options'].get('defaultNavigationTimeout', 30_000)) * 1.5 / 1_000)
             status = resp.status if resp else None
+            resp_msg = f"[{status}] (Security check: {sc_level}) {page.url}"
             if log_level == logging.DEBUG:
-                logger.info(
-                    f"[{status}] {page.url} (server: {browser_data['server']}, browser: {browser_data['id']}, page: {self.pages[page]['id']}")
-            else:
-                logger.info(f"[{status}] {page.url}")
-            if response:
-                return resp, page
-            return page
+                resp_msg += f" (server: {browser_data['server']}, browser: {browser_data['id']}, page: {self.pages[page]['id']}"
+            logger.info(resp_msg)
+            if sc_level < 2:
+                # record that page was navigated with no error.
+                await self._log_browser_error_status(page.browser, Error.NONE)
+                if response:
+                    return resp, page
+                return page
+            logger.error(f"Security error level {sc_level}: {page.url}")
+            # record security error.
+            await self._log_browser_error_status(page.browser, Error.SECURITY)
         except asyncio.TimeoutError:
-            logger.warning(f"Detected error with browser {page.browser}.")
+            # timeout suggests browser crash.
+            logger.warning(f"Detected browser crash {page.browser}.")
             await self._replace_browser(page.browser)
         except Exception as e:
             logger.exception(
                 f"Error fetching page {url}: {e}")
-            # record that there was an error while navigating page.
-            await self._browser_error(page.browser, True)
+        # if browser has not already been replaced, record that there was an error while navigating page.
+        if page.browser in self.browsers:
+            await self._log_browser_error_status(page.browser, Error.OTHER)
             # add the page back to idle page queue.
             await self.set_idle(page)
         retries -= 1
@@ -326,15 +345,32 @@ class Spider:
                                    launch_options=browser_data['launch_options'])
         logger.info(f"Browser {browser} replacement complete.")
 
-    async def _browser_error(self, browser: Browser, error: bool) -> None:
+    async def _log_browser_error_status(self, browser: Browser, status: Error) -> None:
+        browser_data = self.browsers.get(browser)
         # Don't record error for a browser that has already been replaced or is currently being replaced.
-        if browser in self.browsers and not self.browsers[browser]['lock'].locked():
-            if error:
-                self.browsers[browser]['consec_errors'] += 1
-                if self.browsers[browser]['consec_errors'] > self.browsers[browser]['launch_options'].get('maxConsecutiveError', 4):
-                    await self._replace_browser(browser)
+        if browser_data and not browser_data['lock'].locked():
+            if status == Error.NONE:
+                browser_data['consec_errors'] = 0
+                if 'security_check_history' in browser_data:
+                    browser_data['security_check_history'].append(0)
             else:
-                self.browsers[browser]['consec_errors'] = 0
+                launch_options = browser_data['launch_options']
+                if status == Error.SECURITY and 'security_check_history' in browser_data:
+                    sec_hist_buffer = browser_data['security_check_history']
+                    sec_hist_buffer.append(1)
+                    # check if history buffer is full and if it exceeds security check fraction threshold.
+                    max_error_frac = launch_options.get(
+                        'security_error_frac_proxy_switch')
+                    if max_error_frac and len(sec_hist_buffer) == sec_hist_buffer.maxlen and sum(sec_hist_buffer) / sec_hist_buffer.maxlen >= max_error_frac:
+                        # replace browser with a browser using proxy.
+                        # remove security_error_frac_proxy_switch from launch options since we will already be using the proxy.
+                        del launch_options['security_error_frac_proxy_switch']
+                        logger.warning(
+                            f"Request history max security fraction exceeded {max_error_frac}. Launching new browser with proxy.")
+                        return await self._replace_browser(browser)
+                browser_data['consec_errors'] += 1
+                if browser_data['consec_errors'] > launch_options.get('maxConsecutiveError', 4):
+                    return await self._replace_browser(browser)
 
     async def _close_page(self, page: Page) -> None:
         logger.info(f"Removing page: {page}")

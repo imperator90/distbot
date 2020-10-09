@@ -1,5 +1,6 @@
 from pyppeteer.page import Page
 import pyppeteer.errors
+import html_text
 
 from typing import Optional, Union
 from pathlib import Path
@@ -145,6 +146,7 @@ bad_domains = [
 error_regs = [
     re.compile(r) for r in
     (r"(?i)(not|aren't).{1,10}robot",
+     r"(?i)verify your identity",
      r"(?i)(click|select|check).{1,20}box",
      r"(?i)(verify|check|confirm).{1,40}human",
      r"(?i)(enter|type).{1,20}characters",
@@ -159,5 +161,17 @@ error_regs = [
      r"(?i)error.{1,10}not\sfound",
      r"(?i)retriev.{1,5}the url",
      r"(?i)ip\saddress.{1,20}(banned|blocked|permitted)",
-     r"(?i)automated\saccess")
+     r"(?i)automated\saccess",
+     r"https://securepubads\.g\.doubleclick\.net")
 ]
+
+
+async def security_check(page, response):
+    html = await page.content()
+    text = html_text.extract_text(html)
+    error_level = len([r for r in error_regs if r.search(text)])
+    if len(text) < 1000:
+        error_level += 1
+    if response and not response.ok:
+        error_level += 1
+    return error_level

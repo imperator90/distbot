@@ -27,6 +27,7 @@ setuptools.setup(
     install_requires=[
         'pyppeteer',
         'sanic',
-        'requests'
+        'requests',
+        'html_text'
     ],
     test_requires=['pytest', 'pytest_asyncio'])
