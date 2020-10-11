@@ -1,5 +1,4 @@
-from distbot.media import user_agents
-from distbot.utils import security_check, get_logger
+from distbot.utils import security_check, get_logger, user_agents
 
 from pyppeteer.browser import Browser
 from pyppeteer.page import Page
