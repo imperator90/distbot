@@ -23,6 +23,7 @@ import random
 import signal
 import pickle
 import json
+import re
 
 log_level = logging.DEBUG
 log_dir = Path('distbot_logs')
@@ -210,12 +211,18 @@ class Spider:
         logger.info(
             f"[{resp.status_code}] Added Browser on {server_ip}")
         # construct DevTools endpoint.
+        """
+        dev_tools_endpoint = re.sub(r'127\.0\.0\.1:\d{2,7}', server_ip.split(':')[
+                                    0], resp.json()['dev_tools'])
+        """
         dev_tools_endpoint = resp.json()['dev_tools'].replace(
             '127.0.0.1', server_ip.split(':')[0])
         logger.info(
             f"Connecting to {server_ip} browser: {dev_tools_endpoint}")
         # connect to new browser's DevTools endpoint.
-        return await pyppeteer.launcher.connect(browserWSEndpoint=dev_tools_endpoint)
+        browser = await pyppeteer.launcher.connect(browserWSEndpoint=dev_tools_endpoint)
+        logger.info(f"Connected to browser {dev_tools_endpoint}: {browser}")
+        return browser
 
     async def _init_page(self, page):
         # initialize page data.
@@ -356,6 +363,7 @@ class Spider:
             else:
                 launch_options = browser_data['launch_options']
                 if status == Error.SECURITY and 'security_check_history' in browser_data:
+                    # record security check.
                     sec_hist_buffer = browser_data['security_check_history']
                     sec_hist_buffer.append(1)
                     # check if history buffer is full and if it exceeds security check fraction threshold.
@@ -368,6 +376,7 @@ class Spider:
                         logger.warning(
                             f"Request history max security fraction exceeded {max_error_frac}. Launching new browser with proxy.")
                         return await self._replace_browser(browser)
+                # record error.
                 browser_data['consec_errors'] += 1
                 if browser_data['consec_errors'] > launch_options.get('maxConsecutiveError', 4):
                     return await self._replace_browser(browser)
