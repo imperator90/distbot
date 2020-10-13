@@ -30,10 +30,67 @@ logger = get_logger(
     "Spider", log_save_path=log_dir.joinpath('spider.log'), log_level=log_level)
 
 
-class Error(Enum):
-    NONE = 0
-    SECURITY = 1
-    OTHER = 2
+class ProxyMode(Enum):
+    FIFO = 0,
+    LIFO = 1,
+    ROUNDROBIN = 2
+
+
+class ProxyManager:
+    def __init__(self, proxies: List[str], mode=ProxyMode.ROUNDROBIN,
+                 max_error_count: int = 5, request_buffer_size: int = 25):
+        self.proxies = proxies
+        self.mode = mode
+        self.max_error_count = max_error_count
+        self.request_history = deque(maxlen=request_buffer_size)
+        self.rr_proxy_iter = self.__rr_proxy_iter()
+        self.removed_proxies = []
+
+    def set_mode(self, mode: ProxyMode):
+        self.mode = mode
+
+    def add_proxy(self, proxy: str):
+        self.proxies.append(proxy)
+
+    def next_proxy(self):
+        if self.mode == ProxyMode.ROUNDROBIN:
+            return next(self.rr_proxy_iter)
+        if self.mode == ProxyMode.FIFO:
+            return self.proxies[0]
+        if self.mode == ProxyMode.LIFO:
+            return self.proxies[-1]
+
+    async def log_response(self, response, page, proxy):
+        """Check response for proxy-related errors."""
+        if response.status >= 500:
+            logger.error(f"Recoded proxy error ({response.status})")
+            return self._handle_error(proxy)
+        block_probability = await security_check(page, resp)
+        if block_probability > 1:
+            logger.error(
+                f"Recorded proxy security error. Block probability: {block_probability}")
+            return self._handle_error(proxy)
+        # record that page was navigated with no error.
+        self.request_history.append(0)
+
+    def _handle_error(self, proxy):
+        # record proxy error.
+        self.request_history.append(1)
+        # check if proxy now meets removal conditions.
+        if len(self.request_history) == self.request_history.maxlen and sum(self.request_history) >= self.max_error_count:
+            # remove proxy from proxy list and add it removed_proxies so we can reuse it if all proxies get removed.
+            self.proxies.remove(proxy)
+            self.removed_proxies.append(proxy)
+            # if we are all out of proxies, try using the ones that were removed.
+            if not len(self.proxies):
+                self.proxies = self.removed_proxies.copy()
+                self.removed_proxies.clear()
+
+    def __rr_proxy_iter(self):
+        if self.proxies:
+            while True:
+                for p in self.proxies:
+                    yield p
 
 
 class Spider:
@@ -43,17 +100,30 @@ class Spider:
         # runtime storage containers.
         self.browsers: Dict[Browser, Any] = {}
         self.pages: Dict[Page, Any] = {}
+        self.screenshot_dir: Path = None
         self.idle_page_q = asyncio.Queue()
         # use user agents that match current platform.
         self.user_agents = user_agents.get(
             platform.system(), user_agents.get("Linux"))
-        self.screenshot_dir: Path = None
         # catch and handle signal interupts.
         loop = asyncio.get_running_loop()
         for s in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
             loop.add_signal_handler(
                 s, lambda s=s: asyncio.create_task(self.shutdown(s)))
         self.start_time = datetime.now()
+
+    def set_launch_options_proxy(self, launch_options):
+        # check for existing proxy in args
+        if 'args' in launch_options:
+            # remove old proxy from args.
+            launch_options['args'] = [
+                a for a in launch_options['args'] if not a.startswith('--proxy-server=')]
+        else:
+            # initialize args list.
+            launch_options['args'] = []
+        # add new proxy to args.
+        launch_options['args'].append(
+            f'--proxy-server={launch_options["proxy"]}')
 
     async def add_browser(self, pages: int = 1,
                           server: str = None,
@@ -67,21 +137,8 @@ class Spider:
             'lock': Lock(),
             'id': str(uuid4())
         }
-        # security_error_frac_proxy_switch is fraction of request history that is security errors.
-        # type should be tuple of two elements (max_security_error_count, request_history_buffer_size)
-        max_sec_err_frac = launch_options.get(
-            'security_error_frac_proxy_switch')
-        if max_sec_err_frac:
-            browser_data['security_check_history'] = deque(
-                maxlen=max_sec_err_frac[1])
-        elif 'proxy' in launch_options:
-            # start browser using proxy server.
-            if 'args' not in launch_options:
-                launch_options['args'] = []
-            # add proxy server to launch options if it has not already been added.
-            if not any('--proxy-server' in arg for arg in launch_options['args']):
-                launch_options['args'].append(
-                    f'--proxy-server="{launch_options["proxy"]}"')
+        if 'proxy' in launch_options:
+            self.set_launch_options_proxy(launch_options)
         # check if screenshot directory needs to be created.
         if launch_options.get('screenshot', False) and self.screenshot_dir is None:
             # create screenshot directory for this run.
@@ -112,67 +169,63 @@ class Spider:
         for page in await browser.pages():
             await self._init_page(page)
 
-    async def get(self, url, retries=2, response=False, **kwargs):
+    async def _set_cookies(self, page: Page, cookies: Union[List[Dict[str, str]], Dict[str, str]]):
+        if isinstance(cookies, dict):
+            await page.setCookie(cookies)
+        elif isinstance(cookies, (list, tuple, set)):
+            await asyncio.gather(
+                *[page.setCookie(cookie) for cookie in cookies])
+
+    async def _get(self, url: str, page: Page, **kwargs):
+        if 'cookies' in kwargs:
+            # set request cookies if provided.
+            await self._set_cookies(page, kwargs.pop('cookies'))
+        # all kwargs besides 'cookies' should be for goto
+        resp = await page.goto(url, **kwargs)
+        if self.browsers[page.browser]['launch_options'].get('screenshot', False):
+            # save screenshot of page.
+            await self._take_screenshot(page)
+        return resp
+
+    async def get(self, url, retries=2, **kwargs):
         """Navigate next idle page to url."""
+        async def retry(url, retries, **kwargs):
+            retries -= 1
+            if retries >= 0:
+                logger.warning(
+                    f"Retrying request to {url}. Retries remaining: {retries}")
+                return await asyncio.create_task(
+                    self.get(url, retries, **kwargs))
+            logger.error(
+                f"Max retries exceeded: {url}. URL can not be navigated.")
         # get next page from idle queue.
         page = await self._get_idle_page()
         browser_data = self.browsers[page.browser]
-
-        async def try_get(url, **kwargs):
-            # add cookies to request if user provided cookies.
-            if 'cookies' in kwargs:
-                cookies = kwargs.pop('cookies')
-                if isinstance(cookies, dict):
-                    await page.setCookie(cookies)
-                elif isinstance(cookies, (list, tuple, set)):
-                    await asyncio.gather(
-                        *[page.setCookie(cookie) for cookie in cookies])
-            # all kwargs besides 'cookies' should be for goto
-            resp = await page.goto(url, **kwargs)
-            if browser_data['launch_options'].get('screenshot', False):
-                # save screenshot of page.
-                await self._take_screenshot(page)
-            return resp, await security_check(page, resp)
         try:
-            resp, sc_level = await asyncio.wait_for(
-                try_get(url, **kwargs),
+            resp = await asyncio.wait_for(
+                self._get(url, page, **kwargs),
                 # Pyppeteer timout and defaultNavigationTimeout are in milliseconds, but wait_for needs seconds.
                 timeout=kwargs.get('timeout',
                                    browser_data['launch_options'].get('defaultNavigationTimeout', 30_000)) * 1.5 / 1_000)
-            status = resp.status if resp else None
-            resp_msg = f"[{status}] (Security check: {sc_level}) {page.url}"
-            if log_level == logging.DEBUG:
-                resp_msg += f" (server: {browser_data['server']}, browser: {browser_data['id']}, page: {self.pages[page]['id']}"
-            logger.info(resp_msg)
-            if sc_level < 2:
-                # record that page was navigated with no error.
-                await self._log_browser_error_status(page.browser, Error.NONE)
-                if response:
-                    return resp, page
-                return page
-            logger.error(f"Security error level {sc_level}: {page.url}")
-            # record security error.
-            await self._log_browser_error_status(page.browser, Error.SECURITY)
         except asyncio.TimeoutError:
             # timeout suggests browser crash.
             logger.warning(f"Detected browser crash {page.browser}.")
             await self._replace_browser(page.browser)
+            return await retry(url, retries, **kwargs)
         except Exception as e:
             logger.exception(
                 f"Error fetching page {url}: {e}")
-        # if browser has not already been replaced, record that there was an error while navigating page.
-        if page.browser in self.browsers:
+            # record that there was an error while navigating page.
             await self._log_browser_error_status(page.browser, Error.OTHER)
             # add the page back to idle page queue.
             await self.set_idle(page)
-        retries -= 1
-        if retries >= 0:
-            logger.warning(
-                f"Retrying request to {url}. Retries remaining: {retries}")
-            return await asyncio.create_task(
-                self.get(url, retries, response, **kwargs))
-        logger.error(
-            f"Max retries exceeded: {url}. URL can not be navigated.")
+            return await retry(url, retries, **kwargs)
+        status = resp.status if resp else None
+        resp_msg = f"[{status}] {page.url}"
+        if log_level == logging.DEBUG:
+            resp_msg += f" (server: {browser_data['server']}, browser: {browser_data['id']}, page: {self.pages[page]['id']}"
+        logger.info(resp_msg)
+        return resp, page
 
     async def set_idle(self, page: Page) -> None:
         """Add page to the idle queue."""
@@ -183,19 +236,20 @@ class Spider:
             # mark that page is idle.
             self.pages[page]['is_idle'] = True
 
+    async def cancel_spider_tasks(self):
+        # cancel all of Spider's tasks.
+        tasks = [t for t in asyncio.all_tasks(
+        ) if t is not asyncio.current_task() and 'coro=<Spider.' in str(t)]
+        [t.cancel() for t in tasks]
+        logger.info(f"Cancelling {len(tasks)} outstanding tasks.")
+        return await asyncio.gather(*tasks, return_exceptions=True)
+
     async def shutdown(self, sig=None) -> None:
         """Shutdown all browsers."""
         if sig is not None:
             logger.info(f"Caught signal: {sig.name}")
         logger.info("Shutting down...")
-        # cancel all of Spider's tasks.
-        tasks = []
-        for t in asyncio.all_tasks():
-            if t is not asyncio.current_task() and 'coro=<Spider.' in str(t):
-                t.cancel()
-                tasks.append(t)
-        logger.info(f"Cancelling {len(tasks)} outstanding tasks.")
-        await asyncio.gather(*tasks, return_exceptions=True)
+        await self.cancel_spider_tasks()
         # close all browsers on all servers.
         await asyncio.gather(*[asyncio.create_task(self._shutdown_browser(b)) for b in set(self.browsers.keys())])
 
@@ -210,10 +264,6 @@ class Spider:
         logger.info(
             f"[{resp.status_code}] Added Browser on {server_ip}")
         # construct DevTools endpoint.
-        """
-        dev_tools_endpoint = re.sub(r'127\.0\.0\.1:\d{2,7}', server_ip.split(':')[
-                                    0], resp.json()['dev_tools'])
-        """
         dev_tools_endpoint = resp.json()['dev_tools'].replace(
             '127.0.0.1', server_ip.split(':')[0])
         logger.info(
@@ -351,34 +401,17 @@ class Spider:
                                    launch_options=browser_data['launch_options'])
         logger.info(f"Browser {browser} replacement complete.")
 
-    async def _log_browser_error_status(self, browser: Browser, status: Error) -> None:
+    async def _log_browser_error_status(self, browser: Browser, error: bool) -> None:
         browser_data = self.browsers.get(browser)
         # Don't record error for a browser that has already been replaced or is currently being replaced.
         if browser_data and not browser_data['lock'].locked():
-            if status == Error.NONE:
-                browser_data['consec_errors'] = 0
-                if 'security_check_history' in browser_data:
-                    browser_data['security_check_history'].append(0)
-            else:
-                launch_options = browser_data['launch_options']
-                if status == Error.SECURITY and 'security_check_history' in browser_data:
-                    # record security check.
-                    sec_hist_buffer = browser_data['security_check_history']
-                    sec_hist_buffer.append(1)
-                    # check if history buffer is full and if it exceeds security check fraction threshold.
-                    max_error_frac = launch_options.get(
-                        'security_error_frac_proxy_switch')
-                    if max_error_frac and len(sec_hist_buffer) == sec_hist_buffer.maxlen and sum(sec_hist_buffer) / sec_hist_buffer.maxlen >= max_error_frac:
-                        # replace browser with a browser using proxy.
-                        # remove security_error_frac_proxy_switch from launch options since we will already be using the proxy.
-                        del launch_options['security_error_frac_proxy_switch']
-                        logger.warning(
-                            f"Request history max security fraction exceeded {max_error_frac}. Launching new browser with proxy.")
-                        return await self._replace_browser(browser)
+            if error:
                 # record error.
                 browser_data['consec_errors'] += 1
-                if browser_data['consec_errors'] > launch_options.get('maxConsecutiveError', 4):
+                if browser_data['consec_errors'] > browser_data['launch_options'].get('maxConsecutiveError', 4):
                     return await self._replace_browser(browser)
+            else:
+                browser_data['consec_errors'] = 0
 
     async def _close_page(self, page: Page) -> None:
         logger.info(f"Removing page: {page}")
