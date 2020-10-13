@@ -145,7 +145,7 @@ class Spider:
             # timeout suggests browser crash.
             logger.warning(
                 f"Detected browser crash {page.browser} (get timeout exceeded {timeout})")
-            await self._replace_browser(page.browser)
+            await self.replace_browser(page.browser)
             return await retry(url, retries, **kwargs)
         except Exception as e:
             logger.exception(
@@ -248,7 +248,7 @@ class Spider:
             # all page functions will hang and time out if browser has crashed.
             # replace crashed browser.
             logger.warning(f"Detected error with browser {page.browser}: {e}")
-            await self._replace_browser(page.browser)
+            await self.replace_browser(page.browser)
             # try again
             return await self._get_idle_page()
         return page
@@ -347,7 +347,7 @@ class Spider:
                 # record error.
                 browser_data['consec_errors'] += 1
                 if browser_data['consec_errors'] > browser_data['launch_options'].get('maxConsecutiveError', 4):
-                    return await self._replace_browser(browser)
+                    return await self.replace_browser(browser)
             else:
                 browser_data['consec_errors'] = 0
 
@@ -393,4 +393,4 @@ class Spider:
             if browser._connection.connection is None or not browser._connection.connection.open:
                 logger.warning(f"Found closed connection: {browser}")
                 asyncio.create_task(
-                    self._replace_browser(browser))
+                    self.replace_browser(browser))
