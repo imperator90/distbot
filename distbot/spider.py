@@ -1,4 +1,4 @@
-from distbot.utils import security_check, get_logger, user_agents
+from distbot.utils import logger, user_agents
 
 from pyppeteer.browser import Browser
 from pyppeteer.page import Page
@@ -8,7 +8,7 @@ import pyppeteer.errors
 import requests
 
 from typing import Dict, List, Union, Any
-from collections import defaultdict, deque
+from collections import defaultdict
 from asyncio.locks import Lock
 from datetime import datetime
 from pathlib import Path
@@ -23,74 +23,6 @@ import signal
 import pickle
 import json
 import re
-
-log_level = logging.DEBUG
-log_dir = Path('distbot_logs')
-logger = get_logger(
-    "Spider", log_save_path=log_dir.joinpath('spider.log'), log_level=log_level)
-
-
-class ProxyMode(Enum):
-    FIFO = 0,
-    LIFO = 1,
-    ROUNDROBIN = 2
-
-
-class ProxyManager:
-    def __init__(self, proxies: List[str], mode=ProxyMode.ROUNDROBIN,
-                 max_error_count: int = 5, request_buffer_size: int = 25):
-        self.proxies = proxies
-        self.mode = mode
-        self.max_error_count = max_error_count
-        self.request_history = deque(maxlen=request_buffer_size)
-        self.rr_proxy_iter = self.__rr_proxy_iter()
-        self.removed_proxies = []
-
-    def set_mode(self, mode: ProxyMode):
-        self.mode = mode
-
-    def add_proxy(self, proxy: str):
-        self.proxies.append(proxy)
-
-    def next_proxy(self):
-        if self.mode == ProxyMode.ROUNDROBIN:
-            return next(self.rr_proxy_iter)
-        if self.mode == ProxyMode.FIFO:
-            return self.proxies[0]
-        if self.mode == ProxyMode.LIFO:
-            return self.proxies[-1]
-
-    async def log_response(self, response, page, proxy):
-        """Check response for proxy-related errors."""
-        if response.status >= 500:
-            logger.error(f"Recoded proxy error ({response.status})")
-            return self._handle_error(proxy)
-        block_probability = await security_check(page, resp)
-        if block_probability > 1:
-            logger.error(
-                f"Recorded proxy security error. Block probability: {block_probability}")
-            return self._handle_error(proxy)
-        # record that page was navigated with no error.
-        self.request_history.append(0)
-
-    def _handle_error(self, proxy):
-        # record proxy error.
-        self.request_history.append(1)
-        # check if proxy now meets removal conditions.
-        if len(self.request_history) == self.request_history.maxlen and sum(self.request_history) >= self.max_error_count:
-            # remove proxy from proxy list and add it removed_proxies so we can reuse it if all proxies get removed.
-            self.proxies.remove(proxy)
-            self.removed_proxies.append(proxy)
-            # if we are all out of proxies, try using the ones that were removed.
-            if not len(self.proxies):
-                self.proxies = self.removed_proxies.copy()
-                self.removed_proxies.clear()
-
-    def __rr_proxy_iter(self):
-        if self.proxies:
-            while True:
-                for p in self.proxies:
-                    yield p
 
 
 class Spider:
@@ -112,19 +44,6 @@ class Spider:
                 s, lambda s=s: asyncio.create_task(self.shutdown(s)))
         self.start_time = datetime.now()
 
-    def set_launch_options_proxy(self, launch_options):
-        # check for existing proxy in args
-        if 'args' in launch_options:
-            # remove old proxy from args.
-            launch_options['args'] = [
-                a for a in launch_options['args'] if not a.startswith('--proxy-server=')]
-        else:
-            # initialize args list.
-            launch_options['args'] = []
-        # add new proxy to args.
-        launch_options['args'].append(
-            f'--proxy-server={launch_options["proxy"]}')
-
     async def add_browser(self, pages: int = 1,
                           server: str = None,
                           launch_options: Dict[str, Any] = {}) -> Browser:
@@ -138,12 +57,12 @@ class Spider:
             'id': str(uuid4())
         }
         if 'proxy' in launch_options:
-            self.set_launch_options_proxy(launch_options)
+            self.set_launch_args_proxy(launch_options)
         # check if screenshot directory needs to be created.
-        if launch_options.get('screenshot', False) and self.screenshot_dir is None:
+        if self.screenshot_dir is None and launch_options.get('screenshot', False):
             # create screenshot directory for this run.
-            self.screenshot_dir = log_dir.joinpath(
-                f"screenshots_{self.start_time.strftime('%Y-%m-%d_%H:%M:%S')}")
+            self.screenshot_dir = Path(
+                f"distbot/screenshots_{self.start_time.strftime('%Y-%m-%d_%H:%M:%S')}")
             self.screenshot_dir.mkdir()
         # launch browser on server if server address is provided.
         if server:
@@ -168,6 +87,23 @@ class Spider:
             await browser.newPage()
         for page in await browser.pages():
             await self._init_page(page)
+
+    def set_launch_args_proxy(self, launch_options):
+        # check for existing proxy in args
+        if 'args' in launch_options:
+            # remove old proxy from args.
+            launch_options['args'] = [
+                a for a in launch_options['args'] if not a.startswith('--proxy-server=')]
+        else:
+            # initialize args list.
+            launch_options['args'] = []
+        # add new proxy to args.
+        launch_options['args'].append(
+            f'--proxy-server={launch_options["proxy"]}')
+
+    def browser_proxy(self, browser: Browser):
+        if browser in self.browser_data:
+            return self.browser_data[browser]['launch_options'].get('proxy')
 
     async def _set_cookies(self, page: Page, cookies: Union[List[Dict[str, str]], Dict[str, str]]):
         if isinstance(cookies, dict):
@@ -216,15 +152,13 @@ class Spider:
             logger.exception(
                 f"Error fetching page {url}: {e}")
             # record that there was an error while navigating page.
-            await self._log_browser_error_status(page.browser, Error.OTHER)
+            await self._log_browser_error_status(page.browser, True)
             # add the page back to idle page queue.
             await self.set_idle(page)
             return await retry(url, retries, **kwargs)
         status = resp.status if resp else None
-        resp_msg = f"[{status}] {page.url}"
-        if log_level == logging.DEBUG:
-            resp_msg += f" (server: {browser_data['server']}, browser: {browser_data['id']}, page: {self.pages[page]['id']}"
-        logger.info(resp_msg)
+        logger.info(
+            f"[{status}] (server - {browser_data['server']}, browser - {browser_data['id']}, page - {self.pages[page]['id']}): {page.url}")
         return resp, page
 
     async def set_idle(self, page: Page) -> None:

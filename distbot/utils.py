@@ -94,6 +94,10 @@ def get_logger(logger_name: str, log_save_path: Optional[Union[str, Path]] = Non
     return logger
 
 
+logger = get_logger(
+    "distbot", log_save_path=Path('distbot_logs/distbot.log'))
+
+
 user_agents = {
     "Linux": [
         "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:78.0) Gecko/20100101 Firefox/78.0",
