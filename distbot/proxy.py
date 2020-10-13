@@ -14,8 +14,7 @@ class ProxyManager:
         self.rr_proxy_iter = self.__rr_proxy_iter()
         self.removed_proxies = []
 
-    @property
-    def proxy(self) -> str:
+    def get_next_proxy(self) -> str:
         if self.mode == 'roundrobin':
             return next(self.rr_proxy_iter)
         if self.mode == 'fifo':
