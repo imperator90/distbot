@@ -101,8 +101,8 @@ class Spider:
             f'--proxy-server={launch_options["proxy"]}')
 
     def browser_proxy(self, browser: Browser):
-        if browser in self.browser_data:
-            return self.browser_data[browser]['launch_options'].get('proxy')
+        if browser in self.browsers:
+            return self.browsers[browser]['launch_options'].get('proxy')
 
     async def _set_cookies(self, page: Page, cookies: Union[List[Dict[str, str]], Dict[str, str]]):
         if isinstance(cookies, dict):
