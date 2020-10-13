@@ -22,25 +22,24 @@ class ProxyManager:
         if self.mode == 'lifo':
             return self.proxies[-1]
 
-    async def check_proxy_error(self, response, page, proxy) -> bool:
+    async def check_proxy_error(self, response, page, proxy) -> int:
         """Check response for proxy-related errors. Return True if error detected."""
-        if response.status >= 500:
-            logger.error(f"Recoded proxy error status {response.status}")
-            self.__handle_error(proxy)
-            return True
         block_probability = await security_check(page, response)
+        status = response.status if response else None
+        if status and response.status >= 500:
+            block_probability += 1
         if block_probability > 1:
             logger.error(
-                f"Recorded proxy security error. Block probability: {block_probability}")
-            self.__handle_error(proxy)
-            return True
-        # record that page was navigated with no error.
-        self.request_history.append(0)
-        return False
+                f"Recorded proxy security error ({status}). Block probability: {block_probability}")
+            # record proxy error.
+            self.request_history.append(1)
+            self.__check_remove(proxy)
+        else:
+            # record that page was navigated with no error.
+            self.request_history.append(0)
+        return block_probability
 
-    def __handle_error(self, proxy):
-        # record proxy error.
-        self.request_history.append(1)
+    def __check_remove(self, proxy):
         # check if proxy now meets removal conditions.
         if len(self.request_history) == self.request_history.maxlen and sum(self.request_history) >= self.max_error_count:
             logger.error(
