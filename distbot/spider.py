@@ -308,7 +308,7 @@ class Spider:
             await asyncio.sleep(60)
             asyncio.create_task(self._check_idle_status(page))
 
-    async def _replace_browser(self, browser: Browser) -> None:
+    async def replace_browser(self, browser: Browser, launch_options: Dict[str, Any] = None) -> None:
         """Close browser and launch a new one."""
         # check if this browser has already been replaced.
         if browser not in self.browsers:
@@ -328,6 +328,9 @@ class Spider:
         async with lock:
             logger.info(f"Replacing browser: {browser}.")
             browser_data = self.browsers[browser]
+            # update launch options if new options are provided.
+            if launch_options:
+                browser_data['launch_options'].update(launch_options)
             # close the old browser.
             await self._shutdown_browser(browser)
             # add a new browser.
