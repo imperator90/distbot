@@ -15,7 +15,7 @@ class ProxyManager:
         self.removed_proxies = []
 
     @property
-    def proxy(self):
+    def proxy(self) -> str:
         if self.mode == 'roundrobin':
             return next(self.rr_proxy_iter)
         if self.mode == 'fifo':
@@ -23,20 +23,23 @@ class ProxyManager:
         if self.mode == 'lifo':
             return self.proxies[-1]
 
-    async def log_response(self, response, page, proxy):
-        """Check response for proxy-related errors."""
+    async def check_proxy_error(self, response, page, proxy) -> bool:
+        """Check response for proxy-related errors. Return True if error detected."""
         if response.status >= 500:
             logger.error(f"Recoded proxy error status {response.status}")
-            return self._handle_error(proxy)
+            self.__handle_error(proxy)
+            return True
         block_probability = await security_check(page, response)
         if block_probability > 1:
             logger.error(
                 f"Recorded proxy security error. Block probability: {block_probability}")
-            return self._handle_error(proxy)
+            self.__handle_error(proxy)
+            return True
         # record that page was navigated with no error.
         self.request_history.append(0)
+        return False
 
-    def _handle_error(self, proxy):
+    def __handle_error(self, proxy):
         # record proxy error.
         self.request_history.append(1)
         # check if proxy now meets removal conditions.
