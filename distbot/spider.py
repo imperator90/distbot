@@ -14,7 +14,6 @@ from datetime import datetime
 from pathlib import Path
 from pprint import pformat
 from uuid import uuid4
-from enum import Enum
 import platform
 import logging
 import asyncio
@@ -137,15 +136,15 @@ class Spider:
         # get next page from idle queue.
         page = await self._get_idle_page()
         browser_data = self.browsers[page.browser]
+        # Pyppeteer timout and defaultNavigationTimeout are in milliseconds, but wait_for needs seconds.
+        timeout = kwargs.get('timeout', browser_data['launch_options'].get(
+            'defaultNavigationTimeout', 30_000) * 1.5 / 1_000)
         try:
-            resp = await asyncio.wait_for(
-                self._get(url, page, **kwargs),
-                # Pyppeteer timout and defaultNavigationTimeout are in milliseconds, but wait_for needs seconds.
-                timeout=kwargs.get('timeout',
-                                   browser_data['launch_options'].get('defaultNavigationTimeout', 30_000)) * 1.5 / 1_000)
+            resp = await asyncio.wait_for(self._get(url, page, **kwargs), timeout=timeout)
         except asyncio.TimeoutError:
             # timeout suggests browser crash.
-            logger.warning(f"Detected browser crash {page.browser}.")
+            logger.warning(
+                f"Detected browser crash {page.browser} (get timeout exceeded {timeout})")
             await self._replace_browser(page.browser)
             return await retry(url, retries, **kwargs)
         except Exception as e:
@@ -156,6 +155,8 @@ class Spider:
             # add the page back to idle page queue.
             await self.set_idle(page)
             return await retry(url, retries, **kwargs)
+        # record that page was navigated with no error.
+        await self._log_browser_error_status(page.browser, False)
         status = resp.status if resp else None
         logger.info(
             f"[{status}] (server - {browser_data['server']}, browser - {browser_data['id']}, page - {self.pages[page]['id']}): {page.url}")
