@@ -4,6 +4,13 @@ from typing import Dict, List, Union, Any
 from collections import deque
 
 
+async def block_probability(response, page):
+    bp = await security_check(page, response)
+    if response and response.status >= 500:
+        bp += 1
+    return bp
+
+
 class ProxyManager:
     def __init__(self, proxies: List[str], mode: Union['roundrobin', 'lifo', 'fifo'] = 'roundrobin',
                  max_error_count: int = 5, request_buffer_size: int = 25):
@@ -24,20 +31,17 @@ class ProxyManager:
 
     async def check_proxy_error(self, response, page, proxy) -> int:
         """Check response for proxy-related errors. Return True if error detected."""
-        block_probability = await security_check(page, response)
-        status = response.status if response else None
-        if status and response.status >= 500:
-            block_probability += 1
-        if block_probability > 1:
+        bp = await block_probability(response, page)
+        if bp > 1:
             logger.error(
-                f"Recorded proxy security error ({status}). Block probability: {block_probability}")
+                f"Recorded proxy security error. Block probability: {bp}")
             # record proxy error.
             self.request_history.append(1)
             self.__check_remove(proxy)
         else:
             # record that page was navigated with no error.
             self.request_history.append(0)
-        return block_probability
+        return bp
 
     def __check_remove(self, proxy):
         # check if proxy now meets removal conditions.
