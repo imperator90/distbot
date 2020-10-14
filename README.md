@@ -11,6 +11,10 @@ Docker:
 ## Usage   
 Spiders can be ran with multiple browsers and/or multiple browser tabs.   
 All request will be distributed to browsers and tabs in a round-robin fashion.   
+The web browsers used by spiders do not need to be on the same machine as the scraping script.   
+To run a launch and connect to a browser on a remote machine, pass the IP of the remote server when creating the browser:   
+`await spider.add_browser(server='remote.ip.addr')`   
+
 For running distributed spiders, see [examples/distributed.py](./examples/distributed.py)   
 For non-distributed use, see [examples/simple.py](./examples/simple.py)   
 
@@ -30,17 +34,14 @@ Default maximum navigation timeout in ms.
 List of URLs and/or URL patterns to prevent from loading.   
 *Default: []*   
 
-
 **requestAbortTypes**   
 List of content types that should have requests intercepted and aborted.   
 Example types: *image*, *font*, *stylesheet*, *script*.   
 *Default: []*   
 
-
 **evaluateOnNewDocument**   
 List of JavaScript functions (wrapped as str) that will be invoked on every page navigation.   
 *Default: []*    
-
 
 **deleteCookies**
 Clear all cookies before each request.   
@@ -50,10 +51,12 @@ Clear all cookies before each request.
 Maximum allowable consecutive browser errors before browser will be replaced.   
 *Default: 4* 
 
-
 **pageIdleTimeout**   
 Watchdog timer to detect crashes in end user's script. If page is not set idle in {pageIdleTimeout} seconds,
 it will automatically be added to the idle queue.   
+
+**proxy**   
+Address of proxy server to use.   
 
 
 ### Example launch options might look like:   
@@ -73,13 +76,13 @@ it will automatically be added to the idle queue.
     "deleteCookies": True,
     "screenshot: True,
     "pageIdleTimeout": 120,
+    "proxy": "http://5.79.66.2:13010",
     "args": [
         "--disable-web-security",
         "--no-sandbox",
         "--start-maximized",
         "--js-flags=\"--max_old_space_size=500\"",
-        "--blink-settings=imagesEnabled=false",
-        "--proxy-server=http://5.79.66.2:13010"
+        "--blink-settings=imagesEnabled=false"
     ]
 }
 ```

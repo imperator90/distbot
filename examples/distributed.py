@@ -35,11 +35,22 @@ async def fetch(url, spider):
 
 async def main(browsers=2, pages=2):
     urls = load_urls()
-    spider = await Spider(browsers=browsers, pages=pages,
-                          headless=True,
-                          # prevent multiple tasks from simultaneously navigating a page.
-                          keep_pages_queued=False
-                          ).launch()
+    launch_options = {
+        "headless": True,
+        "ignoreHTTPSErrors": True,
+        "defaultViewport": {},
+        # "executablePath": "/usr/bin/google-chrome-stable",
+        "defaultNavigationTimeout": 45_000,
+        "args": [
+            "--disable-web-security",
+            "--no-sandbox",
+            "--start-maximized",
+            "--blink-settings=imagesEnabled=false",
+        ]
+    }
+    spider = Spider()
+    for _ in range(browsers):
+        await spider.add_browser(pages=pages, launch_options=launch_options)
     await asyncio.gather(
         *[asyncio.create_task(fetch(url, spider)) for url in urls])
     await spider.shutdown()
