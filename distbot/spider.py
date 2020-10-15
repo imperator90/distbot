@@ -98,7 +98,7 @@ class Spider:
             launch_options['args'] = []
         # add new proxy to args.
         launch_options['args'].append(
-            f'--proxy-server={launch_options["proxy"]}')
+            f'--proxy-server="{launch_options["proxy"]}"')
 
     def browser_proxy(self, browser: Browser):
         if browser in self.browsers:
