@@ -35,9 +35,14 @@ List of URLs and/or URL patterns to prevent from loading.
 *Default: []*   
 
 **requestAbortTypes**   
-List of content types that should have requests intercepted and aborted.   
-Example types: *image*, *font*, *stylesheet*, *script*.   
-*Default: []*   
+List of content types that should have requests intercepted and aborted.  
+valid content types are: *stylesheet*, *image*, *media*, *font*, *script*,   
+*texttrack*, *xhr*, *fetch*, *eventsource*, *websocket*, *manifest*, *other*.   
+*Default: []*  
+
+**blockRedirects**   
+Intercept and abort redirect requests.   
+*Default: False*   
 
 **evaluateOnNewDocument**   
 List of JavaScript functions (wrapped as str) that will be invoked on every page navigation.   

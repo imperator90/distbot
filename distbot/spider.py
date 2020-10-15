@@ -277,10 +277,14 @@ class Spider:
         # intercept all request and only allow requests for types not in request_abort_types.
         request_abort_types = launch_options.get('requestAbortTypes')
         if request_abort_types:
+            # enable request interception.
             tasks.append(page.setRequestInterception(True))
 
             async def block_type(request):
+                # condition(s) where requests should be aborted.
                 if request.resourceType in request_abort_types:
+                    await request.abort()
+                elif launch_options.get('blockRedirects', False) and request.isNavigationRequest() and len(request.redirectChain):
                     await request.abort()
                 else:
                     await request.continue_()
