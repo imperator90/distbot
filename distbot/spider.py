@@ -38,7 +38,10 @@ class Spider:
             platform.system(), user_agents.get("Linux"))
         # catch and handle signal interupts.
         loop = asyncio.get_running_loop()
-        for s in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        # get interupt signals supported by os.
+        signals = [getattr(signal, s) for s in (
+            'SIGBREAK', 'SIGINT', 'SIGTERM', 'SIGHUP') if hasattr(signal, s)]
+        for s in signals:
             loop.add_signal_handler(
                 s, lambda s=s: asyncio.create_task(self.shutdown(s)))
         self.start_time = datetime.now()
@@ -138,7 +141,7 @@ class Spider:
         browser_data = self.browsers[page.browser]
         # Pyppeteer timout and defaultNavigationTimeout are in milliseconds, but wait_for needs seconds.
         timeout = kwargs.get('timeout', browser_data['launch_options'].get(
-            'defaultNavigationTimeout', 30_000) * 1.5 / 1_000)
+            'defaultNavigationTimeout', 30_000) * 1.25 / 1_000)
         try:
             resp = await asyncio.wait_for(self._get(url, page, **kwargs), timeout=timeout)
         except asyncio.TimeoutError:

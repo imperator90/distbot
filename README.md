@@ -79,6 +79,8 @@ Address of proxy server to use.
     "blockedURLs": ["google-analytics.com","facebook.com"],
     "requestAbortTypes": ["font", "stylesheet"],
     "deleteCookies": True,
+    '--disable-extensions'
+    "userDataDir": "/home/user/Default",
     "screenshot: True,
     "pageIdleTimeout": 120,
     "proxy": "http://5.79.66.2:13010",
