@@ -68,9 +68,6 @@ class Spider:
             self.screenshot_dir.mkdir()
         # launch browser on server if server address is provided.
         if server:
-            logger.info(
-                f"""Launching remote browser on {server}:
-                    {pformat(launch_options)}""")
             browser = await self._launch_remote_browser(server, launch_options)
         else:
             # start a local browser.
@@ -193,6 +190,9 @@ class Spider:
 
     async def _launch_remote_browser(self, server_ip,
                                      launch_options: Dict[str, Any] = None):
+        logger.info(
+            f"""Launching remote browser on {server_ip}:
+                    {pformat(launch_options)}""")
         endpoint = f"http://{server_ip}/new_browser"
         resp = requests.get(endpoint, json=launch_options)
         if resp.status_code != 200:

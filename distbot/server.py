@@ -21,7 +21,7 @@ def parse_args():
     parser.add_argument('-p',
                         '--port',
                         type=int,
-                        default='8000',
+                        default='80',
                         help='Port to run the server on.')
     return parser.parse_args()
 
@@ -72,4 +72,4 @@ async def rm_browser(request):
 if __name__ == '__main__':
     args = parse_args()
 
-    app.run(host=args.address, port=args.port, debug=True)
+    app.run(host=args.address, port=args.port)
