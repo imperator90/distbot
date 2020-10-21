@@ -42,8 +42,11 @@ class Spider:
         signals = [getattr(signal, s) for s in (
             'SIGBREAK', 'SIGINT', 'SIGTERM', 'SIGHUP') if hasattr(signal, s)]
         for s in signals:
-            loop.add_signal_handler(
-                s, lambda s=s: asyncio.create_task(self.shutdown(s)))
+            try:
+                loop.add_signal_handler(
+                    s, lambda s=s: asyncio.create_task(self.shutdown(s)))
+            except NotImplementedError:
+                pass
         self.start_time = datetime.now()
 
     async def add_browser(self, pages: int = 1,
