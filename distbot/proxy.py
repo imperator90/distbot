@@ -59,7 +59,7 @@ class ProxyManager:
                 self.removed_proxies.clear()
 
     def __rr_proxy_iter(self):
-        if self.proxies:
+        if len(self.proxies):
             while True:
                 for p in self.proxies:
                     yield p
