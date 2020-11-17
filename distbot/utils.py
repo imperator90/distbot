@@ -179,3 +179,68 @@ async def security_check(page, response):
     if response and not response.ok:
         error_level += 1
     return error_level
+
+
+def set_default_flags():
+    import pyppeteer.launcher
+    pyppeteer.launcher.DEFAULT_ARGS = [
+        # Disable reporting to UMA, but allows for collection.
+        '--metrics-recording-only',
+        # Disable various background network services, including extension updating, safe browsing service, upgrade detector, translate, UMA.
+        '--disable-background-networking',
+        # Disable syncing to a Google account.
+        '--disable-sync',
+        # Mute any audio.
+        '--mute-audio',
+        # Disable the default browser check, do not prompt to set it as such.
+        '--no-default-browser-check',
+        # Skip first run wizards.
+        '--no-first-run',
+        # Disable timers being throttled in background pages/tabs.
+        '--disable-background-timer-throttling',
+        # Disables client-side phishing detection.
+        '--disable-client-side-phishing-detection',
+        # Disable popup blocking.
+        '--disable-popup-blocking',
+        # Avoid potential instability of using Gnome Keyring or KDE wallet. crbug.com/571003
+        '--password-store=basic',
+        # Use mock keychain on Mac to prevent blocking permissions dialogs
+        '--use-mock-keychain',
+        # Disable PlzNavigate (https://docs.google.com/document/d/1rzDdDcEzulaqgHA6jzMIlZ_5Mu5C76v3iqwylqUOqNQ/edit)
+        '--disable-browser-side-navigation',
+        # Reloading a page that came from a POST normally prompts the user.
+        '--disable-prompt-on-repost',
+        # Suppresses hang monitor dialogs in renderer processes.
+        '--disable-hang-monitor',
+        # By default, an https page cannot run JavaScript, CSS or plug-ins from http URLs.
+        # This provides an override to get the old insecure behavior.
+        "--allow-running-insecure-content",
+        # Disable crashdump collection (reporting is already disabled in Chromium)
+        '--disable-breakpad',
+        # Disable installation of default apps on first run.
+        '--disable-default-apps',
+        # https://github.com/GoogleChrome/puppeteer/issues/1834
+        '--disable-dev-shm-usage',
+        # Disables OOPIF. https://www.chromium.org/Home/chromium-security/site-isolation
+        '--disable-features=site-per-process',
+        # Disables Domain Reliability Monitoring.
+        '--disable-domain-reliability',
+        # Prevent other pages from starting to load before navigation.
+        "--prerender=disabled",
+        # Don't send hyperlink auditing pings.
+        "--no-pings",
+        # Whether or not the browser should warn if the profile is on a network share.
+        # This flag is only relevant for Windows currently.
+        "--no-network-profile-warning",
+        # Disables all experiments set on about:flags. Does not disable about:flag itself.
+        "--no-experiments",
+        # Disables the suggestions service.
+        "--disable-suggestions-service",
+        # Disable prerendering based on local browsing history.
+        "--disable-prerender-local-predictor",
+        # Disable speculative TCP/IP preconnection.
+        "--disable-preconnect",
+        # Disables CNAME lookup of the host when generating the Kerberos SPN for a
+        # Negotiate challenge. See HttpAuthHandlerNegotiate::CreateSPN for more background.
+        # "--disable-auth-negotiate-cname-lookup"
+    ]
