@@ -254,20 +254,31 @@ class Spider:
             return await self._get_idle_page()
         return page
 
+    async def set_ad_block(self, page: Page, enabled: bool = True):
+        # Enable Chrome's experimental ad filter on all sites.
+        await page._client.send('Page.setAdBlockingEnabled', {'enabled': True})
+
+    async def set_blocked_urls(self, page: Page, urls: List[str]):
+        await page._client.send('Network.setBlockedURLs', {'urls': urls})
+
+    def set_stealth(self, page: Page):
+        "add JavaScript functions to prevent automation detection."
+        page.evaluateOnNewDocument(
+            f"() => {{{Path(__file__).parent.joinpath('stealth.min.js').read_text()}}}")
+
     async def _add_page_settings(self, page: Page) -> None:
         """Add custom settings to a page."""
-        # add JavaScript functions to prevent automation detection.
-        tasks = [page.evaluateOnNewDocument(
-            f"() => {{{Path(__file__).parent.joinpath('stealth.min.js').read_text()}}}")]
+        self.set_stealth(page)
         # launch options for this page.
         launch_options = self.browsers[page.browser]['launch_options']
         # set the default maximum navigation time.
         if 'defaultNavigationTimeout' in launch_options:
             page.setDefaultNavigationTimeout(
                 launch_options['defaultNavigationTimeout'])
+        tasks = []
         # blocks URLs from loading.
         if 'blockedURLs' in launch_options:
-            await page._client.send('Network.setBlockedURLs', {'urls': launch_options['blockedURLs']})
+            tasks.append(self.set_blocked_urls(page, launch_options['blockedURLs']))
         # disable cache for each request.
         if 'setCacheEnabled' in launch_options:
             tasks.append(page.setCacheEnabled(
