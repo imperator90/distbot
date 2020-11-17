@@ -148,6 +148,21 @@ bad_domains = [
     "hm.baidu.com"
 ]
 
+# TODO fill this out.
+content_types = {
+    'stylesheet': [],
+    'image': ['*.jpg'],
+    'media': [],
+    'font': [],
+    'script': ['*.js'],
+    'texttrack': [],
+    'xhr': [],
+    'fetch': [],
+    'eventsource': [],
+    'websocket': [],
+    'manifest': []
+}
+
 error_regs = [
     re.compile(r) for r in
     (r"(?i)(not|aren't).{1,10}robot",
