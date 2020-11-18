@@ -3,6 +3,8 @@ import pyppeteer.errors
 import html_text
 
 from typing import Optional, Union
+from collection import defaultdict
+from itertools import product
 from zipfile import ZipFile
 from pathlib import Path
 from time import time
@@ -63,6 +65,69 @@ async def hover(page: Page, ele_xpath: str):
             # perform short sleep to allow hover-triggered content to load.
             await asyncio.sleep(0.66)
         last_ele_count = ele_count
+
+
+async def expand_js_links(spider, page):
+    page_html = defaultdict(list)
+    start_url = page.url
+    for path in ("//a[@href='#']", "//a[@href='javascript:void(0);']"):
+        cur_idx = 0
+        while True:
+            eles = await page.xpath(path)
+            if cur_idx <= len(eles):
+                ele = eles[cur_idx]
+                nav_wait_task = asyncio.create_task(page.waitForNavigation())
+                await ele.click()
+                if page.url != start_url:
+                    try:
+                        await nav_wait_task  # wait for navigation to complete.
+                    except pyppeteer.errors.TimeoutError:
+                        logging.warning(f"Timeout navigating to {page.url}")
+                    html = await page.content()
+                    page_html[page.url] = html
+                    page = await spider.get(start_url)
+                else:
+                    nav_wait_task.cancel()
+                    page_html[page.url] = html
+                cur_idx += 1
+                break
+            else:
+                break
+
+
+async def choose_all_select(page):
+    section_option_values, htmls = [], []
+    for select_ele in await page.xpath('//select'):
+        section_option_values.append([
+            await page.evaluate("(ele) => ele.getAttribute('value')", ele)
+            for ele in await select_ele.xpath('./option[@value]')
+        ])
+    for i, option_values in enumerate(section_option_values, start=1):
+        for opt_val in option_values:
+            await page.select(f'select:nth-child({i})', opt_val)
+            await asyncio.sleep(0.5)
+            html = await page.content()
+            htmls.append(html)
+    return htmls
+
+
+async def choose_all_select_combinations(page):
+    sec_id_vals = []
+    select_sections = await page.xpath('//select')
+    for i, select_ele in enumerate(select_sections, start=1):
+        opt_vals = []
+        for ele in await select_ele.xpath('./option[@value]'):
+            opt_val = await page.evaluate("(ele) => ele.getAttribute('value')", ele)
+            opt_vals.append((i, opt_val))
+        sec_id_vals.append(opt_vals)
+    htmls = []
+    for comb in product(*sec_id_vals):
+        for i, opt_val in comb:
+            await page.select(f'select:nth-child({i})', opt_val)
+            await asyncio.sleep(0.5)
+            html = await page.content()
+            htmls.append(html)
+    return htmls
 
 
 def get_logger(logger_name: str, log_save_path: Optional[Union[str, Path]] = None, log_level: int = logging.INFO) -> logging.Logger:
@@ -311,11 +376,11 @@ def make_auth_proxy_extension(proxy_host, proxy_port, proxy_user, proxy_pass, sa
                 ['blocking']
     );
         """ % {
-            "host": proxy_host,
-            "port": proxy_port,
-            "user": proxy_user,
-            "pass": proxy_pass,
-        }
+        "host": proxy_host,
+        "port": proxy_port,
+        "user": proxy_user,
+        "pass": proxy_pass,
+    }
 
     with ZipFile(save_path, 'w+') as zp:
         zp.writestr("manifest.json", manifest_json)
