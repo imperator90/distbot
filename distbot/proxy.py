@@ -2,6 +2,7 @@ from distbot.utils import logger, security_check
 
 from typing import Dict, List, Union, Any
 from collections import deque
+from zipfile import ZipFile
 
 
 async def block_probability(response, page):
@@ -63,3 +64,63 @@ class ProxyManager:
             while True:
                 for p in self.proxies:
                     yield p
+
+
+def make_auth_proxy_extension(proxy_host, proxy_port, proxy_user, proxy_pass, save_path):
+    manifest_json = """
+    {
+        "version": "1.0.0",
+        "manifest_version": 2,
+        "name": "Chrome Proxy",
+        "permissions": [
+            "proxy",
+            "tabs",
+            "unlimitedStorage",
+            "storage",
+            "<all_urls>",
+            "webRequest",
+            "webRequestBlocking"
+        ],
+        "background": {
+            "scripts": ["background.js"]
+        },
+        "minimum_chrome_version":"22.0.0"
+    }
+    """
+
+    background_js = """
+    var config = {
+            mode: "fixed_servers",
+            rules: {
+              singleProxy: {
+                scheme: "http",
+                host: "%(host)s",
+                port: parseInt(%(port)d)
+              },
+              bypassList: ["foobar.com"]
+            }
+          };
+    chrome.proxy.settings.set({value: config, scope: "regular"}, function() {});
+    function callbackFn(details) {
+        return {
+            authCredentials: {
+                username: "%(user)s",
+                password: "%(pass)s"
+            }
+        };
+    }
+    chrome.webRequest.onAuthRequired.addListener(
+                callbackFn,
+                {urls: ["<all_urls>"]},
+                ['blocking']
+    );
+        """ % {
+        "host": proxy_host,
+        "port": proxy_port,
+        "user": proxy_user,
+        "pass": proxy_pass,
+    }
+
+    with ZipFile(save_path, 'w+') as zp:
+        zp.writestr("manifest.json", manifest_json)
+        zp.writestr("background.js", background_js)
