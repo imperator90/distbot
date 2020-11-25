@@ -20,7 +20,7 @@ async def main():
     }
     spider = Spider()
     await spider.add_browser(launch_options=launch_options)
-    page = await spider.get('https://www.amazon.com/')
+    _, page = await spider.get('https://www.amazon.com/')
     await scroll(page)
     urls = set([await page.evaluate("(ele) => ele.getAttribute('href')", ele)
                 for ele in await page.xpath("//a[@href]")])

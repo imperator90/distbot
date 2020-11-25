@@ -76,8 +76,8 @@ class Spider:
     def set_launch_args_proxy(self, launch_options: Dict[str, Any]) -> None:
         """Remove any old proxy from args and add a new proxy to args."""
         launch_options['args'] = [
-            a for a in launch_options.get('args',[]) if not a.startswith('--proxy-server=')] \
-                + [f'--proxy-server="{launch_options["proxy"]}"']
+            a for a in launch_options.get('args', []) if not a.startswith('--proxy-server=')] \
+            + [f'--proxy-server="{launch_options["proxy"]}"']
 
     def current_browser_proxy(self, browser: Browser) -> Union[str, None]:
         """Get address of proxy that browser is currently using."""
@@ -94,7 +94,7 @@ class Spider:
 
     async def get(self, url: str, retries: int = 2, **kwargs) -> Tuple[Response, Page]:
         """Navigate next idle page to url."""
-        async def _get(self, url: str, page: Page, **kwargs) -> Response:
+        async def _get(url: str, page: Page, **kwargs) -> Response:
             """All page functions that will hang on page crash go here."""
             if 'cookies' in kwargs:
                 # set request cookies if provided.
@@ -105,6 +105,7 @@ class Spider:
                 # save screenshot of page.
                 await self._take_screenshot(page)
             return resp
+
         async def _retry_get(url: str, retries: int, **kwargs):
             """Retry navigation if there are remaining retries."""
             retries -= 1
@@ -119,7 +120,8 @@ class Spider:
         # get next page from idle queue.
         page = await self._get_idle_page()
         browser_data = self.browsers[page.browser]
-        timeout = kwargs.get('timeout', self._default_nav_func_wait(browser_data))
+        timeout = kwargs.get(
+            'timeout', self._default_nav_func_wait(browser_data))
         try:
             resp = await asyncio.wait_for(_get(url, page, **kwargs), timeout=timeout)
         except asyncio.TimeoutError:
@@ -146,7 +148,8 @@ class Spider:
     def _default_nav_func_wait(self, browser_data: Dict[str, Any]) -> int:
         """Default asyncio.wait_for timeout to use for functions that naviage a page."""
         # Pyppeteer's default navigation timeout is 30s. Allow waiting for 25% longer than default navigation timeout.
-        default_wait_time = browser_data['launch_options'].get('defaultNavigationTimeout', 30_000) * 1.25 
+        default_wait_time = browser_data['launch_options'].get(
+            'defaultNavigationTimeout', 30_000) * 1.25
         # Pyppeteer timout and defaultNavigationTimeout are in milliseconds, but wait_for needs seconds.
         return default_wait_time / 1_000
 
@@ -167,7 +170,7 @@ class Spider:
         logger.info(f"Cancelling {len(tasks)} outstanding tasks.")
         return await asyncio.gather(*tasks, return_exceptions=True)
 
-    async def shutdown(self, sig = None) -> None:
+    async def shutdown(self, sig=None) -> None:
         """Shutdown all browsers."""
         if sig is not None:
             logger.info(f"Caught signal: {sig.name}")
@@ -176,7 +179,7 @@ class Spider:
         # close all browsers on all servers.
         await asyncio.gather(
             *[asyncio.create_task(
-                self._shutdown_browser(b)) 
+                self._shutdown_browser(b))
                 for b in set(self.browsers.keys())])
 
     async def _launch_local_browser(self, launch_options: Dict[str, Any] = None) -> Browser:
@@ -261,24 +264,24 @@ class Spider:
     async def set_blocked_urls(self, page: Page, urls: List[str]):
         await page._client.send('Network.setBlockedURLs', {'urls': urls})
 
-    def set_stealth(self, page: Page):
+    async def set_stealth(self, page: Page):
         "add JavaScript functions to prevent automation detection."
-        page.evaluateOnNewDocument(
+        await page.evaluateOnNewDocument(
             f"() => {{{Path(__file__).parent.joinpath('stealth.min.js').read_text()}}}")
 
     async def _add_page_settings(self, page: Page) -> None:
         """Add custom settings to a page."""
-        self.set_stealth(page)
         # launch options for this page.
         launch_options = self.browsers[page.browser]['launch_options']
         # set the default maximum navigation time.
         if 'defaultNavigationTimeout' in launch_options:
             page.setDefaultNavigationTimeout(
                 launch_options['defaultNavigationTimeout'])
-        tasks = []
+        tasks = [self.set_stealth(page)]
         # blocks URLs from loading.
         if 'blockedURLs' in launch_options:
-            tasks.append(self.set_blocked_urls(page, launch_options['blockedURLs']))
+            tasks.append(self.set_blocked_urls(
+                page, launch_options['blockedURLs']))
         # disable cache for each request.
         if 'setCacheEnabled' in launch_options:
             tasks.append(page.setCacheEnabled(
@@ -291,6 +294,7 @@ class Spider:
         if request_abort_types:
             # enable request interception.
             tasks.append(page.setRequestInterception(True))
+
             async def block_type(request: Request):
                 # condition(s) where requests should be aborted.
                 if request.resourceType in request_abort_types:

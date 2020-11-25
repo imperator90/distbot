@@ -3,7 +3,7 @@ import pyppeteer.errors
 import html_text
 
 from typing import Optional, Union
-from collection import defaultdict
+from collections import defaultdict
 from itertools import product
 from pathlib import Path
 from time import time
