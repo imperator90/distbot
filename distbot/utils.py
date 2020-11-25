@@ -13,7 +13,7 @@ import asyncio
 import sys
 import re
 
-"""
+
 async def scroll(page: Page, timeout: int = 5):
     "Scroll to the bottom of page."
     logging.info(f"Scrolling page: {page.url}")
@@ -41,7 +41,6 @@ async def scroll(page: Page, timeout: int = 5):
     except Exception as e:
         logging.exception(
             f"Page ({page.url}) not scrollable. Error: {e}")
-"""
 
 
 async def hover(page: Page, ele_xpath: str):
