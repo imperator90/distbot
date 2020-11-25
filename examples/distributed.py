@@ -6,10 +6,13 @@ import asyncio
 import csv
 import sys
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 
 def load_urls(url_count=100_000):
-    """Get random urls from the Alexa top 1,000,000 list."""
-    print("Loading urls..")
+    """Get random URLs from the Alexa top million list."""
+    print("Loading URLs..")
     with Path("alexatop1m.csv").open(mode='r') as i:
         urls = ['http://'+r[1] for r in csv.reader(i)]
     print(f"Returning {url_count} random urls.")
@@ -21,7 +24,7 @@ async def fetch(url, spider):
     # default waitUntil is 'load', which will wait until the page is fully-loaded.
     # domcontentloaded will wait for the initial HTML document has been completely loaded and parsed,
     # without waiting for stylesheets, images, and subframes to finish loading.
-    resp, page = await spider.get(url, response=True, waitUntil='domcontentloaded')
+    resp, page = await spider.get(url, waitUntil='domcontentloaded')
     log_str = f'{datetime.now()}\t{resp.status}\t{page.url}'
     title = await page.xpath('//title')
     if title:
@@ -36,11 +39,11 @@ async def fetch(url, spider):
 async def main(browsers=2, pages=2):
     urls = load_urls()
     launch_options = {
-        "headless": True,
+        "headless": False,
         "ignoreHTTPSErrors": True,
         "defaultViewport": {},
-        # "executablePath": "/usr/bin/google-chrome-stable",
-        "defaultNavigationTimeout": 45_000,
+        "executablePath": "/usr/bin/google-chrome-stable",
+        "defaultNavigationTimeout": 30_000,
         "args": [
             "--disable-web-security",
             "--no-sandbox",
@@ -59,6 +62,7 @@ async def main(browsers=2, pages=2):
 if __name__ == "__main__":
     # check for command line arguments: number of browsers, number of pages per browser.
     if len(sys.argv) == 3:
-        asyncio.run(main(sys.argv[1], sys.argv[2]))
+        asyncio.run(
+            main(int(sys.argv[1]), int(sys.argv[2])))
     else:
         asyncio.run(main())
