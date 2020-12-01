@@ -53,7 +53,7 @@ class Spider:
             browser = await self._launch_remote_browser(server, launch_options)
         else:
             # start a local browser.
-            browser = await self._launch_local_browser()
+            browser = await self._launch_local_browser(launch_options)
         # save browser data.
         self.browsers[browser] = {
             'page_count': pages,
