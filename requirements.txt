@@ -1,4 +1,3 @@
 pyppeteer
-sanic
 requests
 html_text
